@@ -1,0 +1,47 @@
+# Local credentials and deployment settings
+.env
+.env.*
+!.env.example
+*.local.env
+*.local.yaml
+*.local.yml
+*.local.json
+*.local.md
+configs/workers.yaml
+.aws/
+.codex/
+.agents/
+*.pem
+*.key
+
+# Python / frontend build products
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+node_modules/
+dist/
+build/
+playwright-report/
+test-results/
+
+# Model weights, runtime state, and raw experiments
+models/
+checkpoints/
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+.cache/
+.runtime/
+logs/
+results/raw/
+*.log
+*.pid
+*.mp4
+*.webm
+.DS_Store

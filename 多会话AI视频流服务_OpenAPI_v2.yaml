@@ -1,0 +1,535 @@
+openapi: 3.1.0
+info:
+  title: Interactive Video Session Service API
+  version: 2.0.0
+  description: 本项目自定义可扩展接口；会话数量和Worker数量通过部署配置及动态容量计算，不内置固定房间上限。HTTP 管理会话/信令、WebRTC DataChannel 携带实际 Prompt。HTTP
+    202 不表示视频模型已执行提示词。初次创建返回201；相同幂等键和相同内容重放返回200。
+servers:
+- url: http://localhost:8080
+  description: Example local endpoint only
+paths:
+  /api/v1/sessions:
+    post:
+      operationId: createSession
+      summary: 创建视频会话并原子预留健康 worker
+      parameters:
+      - name: Idempotency-Key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+        description: 同一键与同一请求体的重试应返回同一个会话。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSessionRequest'
+            example:
+              label: forest-room
+              initial_prompt: A small fox walks through a snowy forest.
+              seed: 42
+      responses:
+        '201':
+          description: Worker 已预留；不意味着媒体已经建立或视频已生成。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '200':
+          description: Idempotency-Key 重试命中既有会话；没有再次分配 worker。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/NoCapacity'
+        '503':
+          $ref: '#/components/responses/Unavailable'
+    get:
+      operationId: listSessions
+      summary: 分页列出当前管理器可见的会话（MVP受控环境）
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: 分页结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/v1/capacity:
+    get:
+      operationId: getCapacity
+      summary: 按实际 Worker 槽位动态返回容量快照
+      responses:
+        '200':
+          description: 当前容量摘要
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapacitySummary'
+              example:
+                total_slots: 4
+                active_sessions: 2
+                reserved_sessions: 0
+                available_slots: 2
+                effective_limit: 4
+                policy: reject
+        '503':
+          $ref: '#/components/responses/Unavailable'
+  /api/v1/sessions/{session_id}:
+    parameters:
+    - $ref: '#/components/parameters/SessionId'
+    get:
+      operationId: getSession
+      summary: 查询会话状态
+      responses:
+        '200':
+          description: 会话状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      operationId: deleteSession
+      summary: 请求异步停止生成并回收 worker
+      description: 202 表示已启动清理；必须在重置完成后才能重新分配 worker。
+      responses:
+        '202':
+          description: 清理处理中
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '204':
+          description: 会话已关闭，无响应正文
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /api/v1/sessions/{session_id}/prompt:
+    parameters:
+    - $ref: '#/components/parameters/SessionId'
+    put:
+      operationId: acceptPrompt
+      summary: 校验并登记下一条提示词（不是模型执行确认）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+            example:
+              client_seq: 1
+              prompt: The fox stops near a cabin.
+      responses:
+        '202':
+          description: 已接受登记；客户端必须在指定 WebRTC data channel 上继续投递。
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptAccepted'
+              example:
+                client_seq: 1
+                status: ACCEPTED
+                delivery_required: WEBRTC_DATA_CHANNEL
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/sessions/{session_id}/heartbeat:
+    parameters:
+    - $ref: '#/components/parameters/SessionId'
+    post:
+      operationId: heartbeat
+      summary: 续租并提交客户端观测状态
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HeartbeatRequest'
+      responses:
+        '200':
+          description: 租约续期成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HeartbeatResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /api/v1/sessions/{session_id}/webrtc/offer:
+    parameters:
+    - $ref: '#/components/parameters/SessionId'
+    post:
+      operationId: exchangeOffer
+      summary: 向已绑定 worker 转发 WebRTC SDP offer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SdpOffer'
+      responses:
+        '200':
+          description: Worker 的 SDP answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SdpAnswer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/UpstreamFailure'
+        '504':
+          $ref: '#/components/responses/UpstreamTimeout'
+  /api/v1/sessions/{session_id}/webrtc/ice:
+    parameters:
+    - $ref: '#/components/parameters/SessionId'
+    patch:
+      operationId: patchIceCandidates
+      summary: 向同一 worker 转发 Trickle ICE 候选
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IceCandidates'
+      responses:
+        '204':
+          description: 已转发候选，无响应正文
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '502':
+          $ref: '#/components/responses/UpstreamFailure'
+  /healthz:
+    get:
+      operationId: healthz
+      summary: 控制服务进程存活检查
+      responses:
+        '200':
+          description: 控制服务存活
+  /readyz:
+    get:
+      operationId: readyz
+      summary: 至少存在一个健康并已完成管线加载的 worker（Mock 同样实现）
+      responses:
+        '200':
+          description: 已具备接纳请求的条件
+        '503':
+          description: 没有就绪 worker
+components:
+  parameters:
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+  schemas:
+    CreateSessionRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - label
+      - initial_prompt
+      properties:
+        label:
+          type: string
+          minLength: 1
+          maxLength: 80
+        initial_prompt:
+          type: string
+          minLength: 1
+          maxLength: 3000
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 2147483647
+    Session:
+      type: object
+      required:
+      - session_id
+      - state
+      - lease_seconds
+      - last_accepted_seq
+      properties:
+        session_id:
+          type: string
+        state:
+          type: string
+          enum:
+          - ALLOCATED
+          - CONNECTING
+          - ACTIVE
+          - CLOSING
+          - CLOSED
+          - FAILED
+        lease_seconds:
+          type: integer
+          minimum: 0
+        last_accepted_seq:
+          type: integer
+          minimum: 0
+        webrtc:
+          type: object
+          properties:
+            ice_servers:
+              type: array
+              items:
+                type: object
+                description: RTCIceServer-compatible configuration provided by deployment
+                additionalProperties: true
+    PromptRequest:
+      type: object
+      additionalProperties: false
+      required:
+      - client_seq
+      - prompt
+      properties:
+        client_seq:
+          type: integer
+          minimum: 1
+        prompt:
+          type: string
+          minLength: 1
+          maxLength: 3000
+    PromptAccepted:
+      type: object
+      required:
+      - client_seq
+      - status
+      - delivery_required
+      properties:
+        client_seq:
+          type: integer
+          minimum: 1
+        status:
+          type: string
+          enum:
+          - ACCEPTED
+        delivery_required:
+          type: string
+          enum:
+          - WEBRTC_DATA_CHANNEL
+    HeartbeatRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        client_media_state:
+          type: string
+          enum:
+          - new
+          - connecting
+          - connected
+          - disconnected
+          - failed
+          - closed
+        received_frames:
+          type: integer
+          minimum: 0
+    HeartbeatResponse:
+      type: object
+      required:
+      - state
+      - lease_seconds
+      properties:
+        state:
+          type: string
+          enum:
+          - ALLOCATED
+          - CONNECTING
+          - ACTIVE
+          - CLOSING
+          - CLOSED
+          - FAILED
+        lease_seconds:
+          type: integer
+          minimum: 0
+    SdpOffer:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - sdp
+      properties:
+        type:
+          type: string
+          const: offer
+        sdp:
+          type: string
+          minLength: 1
+    SdpAnswer:
+      type: object
+      additionalProperties: false
+      required:
+      - type
+      - sdp
+      properties:
+        type:
+          type: string
+          const: answer
+        sdp:
+          type: string
+          minLength: 1
+    IceCandidates:
+      type: object
+      additionalProperties: false
+      required:
+      - candidates
+      properties:
+        candidates:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            additionalProperties: false
+            required:
+            - candidate
+            properties:
+              candidate:
+                type: string
+              sdpMid:
+                type:
+                - string
+                - 'null'
+              sdpMLineIndex:
+                type:
+                - integer
+                - 'null'
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - code
+          - message
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            request_id:
+              type: string
+    SessionList:
+      type: object
+      required:
+      - items
+      - next_cursor
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Session'
+        next_cursor:
+          type:
+          - string
+          - 'null'
+    CapacitySummary:
+      type: object
+      required:
+      - total_slots
+      - active_sessions
+      - reserved_sessions
+      - available_slots
+      - effective_limit
+      - policy
+      properties:
+        total_slots:
+          type: integer
+          minimum: 0
+          description: 所有健康可用Worker的额定槽位总数（含已占用）
+        active_sessions:
+          type: integer
+          minimum: 0
+        reserved_sessions:
+          type: integer
+          minimum: 0
+        available_slots:
+          type: integer
+          minimum: 0
+          description: 已经考虑实际空闲槽位和可选全局上限
+        effective_limit:
+          type: integer
+          minimum: 0
+          description: 健康槽位与可选全局上限中的较小值
+        policy:
+          type: string
+          enum:
+          - reject
+  responses:
+    BadRequest:
+      description: 请求格式错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: 会话不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: 会话状态错误、幂等键冲突、提示词序号冲突
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NoCapacity:
+      description: 无空闲 worker；拒绝创建会话
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unavailable:
+      description: Worker 不可用
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UpstreamFailure:
+      description: Worker 上游执行或信令转发失败
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UpstreamTimeout:
+      description: 等待上游完成超时
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
