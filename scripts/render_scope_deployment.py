@@ -11,13 +11,21 @@ parser.add_argument("--node-image", default="node:22.16.0-bookworm-slim")
 parser.add_argument("--port", type=int, default=8080)
 parser.add_argument("--width", type=int, default=576)
 parser.add_argument("--height", type=int, default=320)
+parser.add_argument("--worker-startup-timeout", type=int, default=90, help="Seconds for the owned Scope process to reach HTTP readiness")
+parser.add_argument("--pipeline-ready-timeout", type=int, default=600, help="Separate model-loading deadline in seconds")
+parser.add_argument("--first-frame-timeout", type=int, default=180, help="Separate first-frame deadline after connection in seconds")
 parser.add_argument("--runtime-root", help="Optional preinstalled shared-disk venvs (scope-env, hub-env, python); reduces Docker layer storage")
 args = parser.parse_args()
 ids = args.gpu_ids.split(",")
 if not ids or any(not x.isdigit() for x in ids) or len(set(ids)) != len(ids):
     parser.error("GPU IDs must be unique nonnegative integers")
+if min(args.worker_startup_timeout, args.pipeline_ready_timeout, args.first_frame_timeout) <= 0:
+    parser.error("Timeouts must be positive seconds")
 base = yaml.safe_load(Path("configs/workers.example.yaml").read_text())
 base["workers"] = []
+base.update(worker_startup_timeout_s=args.worker_startup_timeout,
+            pipeline_ready_timeout_s=args.pipeline_ready_timeout,
+            first_frame_timeout_s=args.first_frame_timeout)
 services = {"hub": {"build": {"context": ".", "args": {"NODE_IMAGE": args.node_image}}, "image": "longlive-rooms:0.1.0", "init": True, "restart": "unless-stopped", "ports": [f"127.0.0.1:{args.port}:8080"], "environment": {"WORKER_CONFIG_PATH": "/app/configs/workers.local.yaml", "LOG_PATH": "/app/logs/events.jsonl"}, "volumes": ["./configs/workers.local.yaml:/app/configs/workers.local.yaml:ro", "./logs:/app/logs"], "depends_on": {}}}
 for i, gpu in enumerate(ids):
     name = f"worker-{i+1}"
@@ -25,6 +33,8 @@ for i, gpu in enumerate(ids):
     base["workers"].append({"id": name, "backend": "scope", "endpoint": f"http://{name}:8000", "control_endpoint": f"http://{name}:9100", "launch_mode": "managed", "pipeline_id": "longlive", "width": args.width, "height": args.height, "seed": 42+i})
     services[name] = {"build": {"context": ".", "dockerfile": "deploy/Dockerfile.scope", "args": {"SCOPE_IMAGE": args.scope_image}}, "image": "longlive-scope:0.2.5", "init": True, "restart": "unless-stopped", "shm_size": "2gb", "environment": {"CUDA_VISIBLE_DEVICES": "0", "NVIDIA_VISIBLE_DEVICES": gpu, "DISABLE_SAGEATTENTION": "1", "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}, "volumes": ["./models:/models", f"./logs/{name}:/logs"], "expose": ["8000", "9100"], "deploy": {"resources": {"reservations": {"devices": [{"driver": "nvidia", "device_ids": [gpu], "capabilities": ["gpu"]}]}}}, "healthcheck": {"test": ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/healthz', timeout=2)"], "interval": "10s", "timeout": "3s", "start_period": "90s", "retries": 12}}
     services["hub"]["depends_on"][name] = {"condition": "service_healthy"}
+    services[name]["environment"]["WORKER_STARTUP_TIMEOUT_S"] = str(args.worker_startup_timeout)
+    services[name]["healthcheck"]["start_period"] = f"{args.worker_startup_timeout}s"
 for service in services.values():
     # Docker client defaults can inject unrelated proxies into new containers.
     # This topology uses private peers and preverified offline model assets.

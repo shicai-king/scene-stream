@@ -13,7 +13,8 @@
 - Load uses **`base_seed`**, not the older documentation's `seed` example.
 - Upstream offer: `POST /api/v1/webrtc/offer`; response includes `sessionId`, `type`, `sdp`.
 - The hub creates an ordered `parameters` channel and recvonly video transceiver before offering. It waits for local ICE gathering and sends the complete SDP.
-- `initialParameters` includes pipeline_ids, input_mode=text, prompts, manage_cache, and denoising_step_list. Later prompt messages are `{"prompts":[{"text":"...","weight":1.0}]}`.
+- `initialParameters` includes pipeline_ids, an explicit pipeline → video sink graph, input_mode=text, prompts, manage_cache, and denoising_step_list. Later prompt messages are `{"prompts":[{"text":"...","weight":1.0}]}`.
+- The graph has no input source. Its explicit sink selects `SinkOutputTrack`, which reads generated frames without a camera track. In this pinned release, the legacy `VideoProcessingTrack.recv()` stops when no incoming/external input is active; omitting the graph can therefore produce GPU batches without sending video to a receive-only peer.
 - `DELETE /api/v1/webrtc/offer/{session_id}` exists in this release. It is used for connection cleanup but is not treated as proof of complete model-state reset.
 - Each offer gets a separate FrameProcessor; multiple viewer offers to one Scope process are not assumed to share one output. This project uses one upstream peer per room.
 

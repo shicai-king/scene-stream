@@ -21,11 +21,14 @@ python3 scripts/verify_models.py
 
 docker build -f deploy/Dockerfile.runtime -t longlive-runtime:0.1.0 .
 runtime/hub-env/bin/python scripts/render_scope_deployment.py \
-  --gpu-ids 0,1 --width 384 --height 224 --runtime-root "$PWD/runtime"
+  --gpu-ids 0,1 --width 384 --height 224 --runtime-root "$PWD/runtime" \
+  --worker-startup-timeout 300
 docker compose -f compose.scope.local.yaml up --no-build -d
 ```
 
 `--gpu-ids` must contain only devices the operator may use. The renderer creates writable worker log directories as the current user. The containers run as that user and mount only their required environment, managed Python and Scope source as read-only, plus model/log/config directories. No host network or Docker socket is mounted. Assets and per-process caches remain inside the worker's temporary directory.
+
+Cold Python imports over NFS can take longer than local-disk startup. `--worker-startup-timeout` sets the supervisor, hub and health-check startup budgets together. `--pipeline-ready-timeout` (default 600 seconds) and `--first-frame-timeout` (default 180 seconds) remain separate model-load and connected-media deadlines. These are configurable limits, not latency promises.
 
 The generated services explicitly clear proxy variables and set `NO_PROXY=*`. Docker client defaults can otherwise inject a host-only or SOCKS proxy, breaking Scope startup or private worker communication. Model downloads happen before startup; the running model uses verified local files. Host proxy settings are left unchanged.
 

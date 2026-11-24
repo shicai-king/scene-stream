@@ -26,6 +26,8 @@ Browser(s) ── HTTP + one multiplexed WebSocket ── FastAPI room hub
 
 Scope-to-hub WebRTC runs within the private Docker network with no external ICE servers. The hub decodes the one upstream video track, JPEG-encodes a bounded-rate preview, and shares the same packet with viewers. Browser media and control use the same TCP entrypoint, allowing ordinary SSH port forwarding. This deliberately replaces the old requirement for browser-to-Worker WebRTC; it is documented as `websocket-jpeg` in `/api/v1/info`.
 
+Text generation uses an explicit Scope graph connecting the loaded pipeline's video output to a sink. No camera or synthetic input video is required. This selects the pinned release's output-only track instead of its legacy track that waits for incoming video.
+
 The tradeoff is CPU JPEG encoding and more bandwidth than interframe video codecs. Browser display rate, hub source receive rate, and model output rate are separate metrics. The hub keeps a single newest frame per viewer, so a slow viewer does not accumulate an old video backlog or block other viewers.
 
 ## Objects and states

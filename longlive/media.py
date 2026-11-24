@@ -205,7 +205,17 @@ class ScopeSource(WebRTCSource):
         if self.config.launch_mode == "managed":
             await self.reset_owned_process()
         await self.load_pipeline()
-        parameters = {"pipeline_ids": [self.config.pipeline_id], "input_mode": "text", "manage_cache": True, "denoising_step_list": [1000, 750, 500, 250], **self.config.runtime_params, "prompts": [{"text": self.prompt, "weight": 1.0}]}
+        pipeline_id = self.config.pipeline_id
+        sink_id = f"{pipeline_id}-output"
+        # An explicit sink selects Scope's output-only track. Its legacy video
+        # track stops when the offer contains no incoming camera/video track.
+        graph = {
+            "nodes": [{"id": pipeline_id, "type": "pipeline", "pipeline_id": pipeline_id},
+                      {"id": sink_id, "type": "sink"}],
+            "edges": [{"from": pipeline_id, "from_port": "video", "to_node": sink_id,
+                       "to_port": "video", "kind": "stream"}],
+        }
+        parameters = {"pipeline_ids": [pipeline_id], "graph": graph, "input_mode": "text", "manage_cache": True, "denoising_step_list": [1000, 750, 500, 250], **self.config.runtime_params, "prompts": [{"text": self.prompt, "weight": 1.0}]}
         async with asyncio.timeout(self.settings.connect_timeout_s):
             await self.pc.setLocalDescription(await self.pc.createOffer())
             response = await self.http.post("/api/v1/webrtc/offer", json={"type": self.pc.localDescription.type, "sdp": self.pc.localDescription.sdp, "initialParameters": parameters}, timeout=self.settings.connect_timeout_s)
