@@ -151,12 +151,13 @@ class MockSource(WebRTCSource):
 
     async def start(self, on_frame: FrameCallback, on_error: ErrorCallback):
         self.on_frame, self.on_error = on_frame, on_error
-        await self.pc.setLocalDescription(await self.pc.createOffer())
-        await self.sender.setRemoteDescription(self.pc.localDescription)
-        self.sender.addTrack(self.track)
-        await self.sender.setLocalDescription(await self.sender.createAnswer())
-        await self.pc.setRemoteDescription(self.sender.localDescription)
-        await asyncio.wait_for(self.channel_open.wait(), self.settings.connect_timeout_s)
+        async with asyncio.timeout(self.settings.connect_timeout_s):
+            await self.pc.setLocalDescription(await self.pc.createOffer())
+            await self.sender.setRemoteDescription(self.pc.localDescription)
+            self.sender.addTrack(self.track)
+            await self.sender.setLocalDescription(await self.sender.createAnswer())
+            await self.pc.setRemoteDescription(self.sender.localDescription)
+            await self.channel_open.wait()
         await asyncio.wait_for(self.first_frame.wait(), self.settings.first_frame_timeout_s)
 
     async def stop(self) -> bool:
@@ -204,14 +205,15 @@ class ScopeSource(WebRTCSource):
         if self.config.launch_mode == "managed":
             await self.reset_owned_process()
         await self.load_pipeline()
-        await self.pc.setLocalDescription(await self.pc.createOffer())
         parameters = {"pipeline_ids": [self.config.pipeline_id], "input_mode": "text", "manage_cache": True, "denoising_step_list": [1000, 750, 500, 250], **self.config.runtime_params, "prompts": [{"text": self.prompt, "weight": 1.0}]}
-        response = await self.http.post("/api/v1/webrtc/offer", json={"type": self.pc.localDescription.type, "sdp": self.pc.localDescription.sdp, "initialParameters": parameters}, timeout=self.settings.connect_timeout_s)
-        response.raise_for_status()
-        answer = response.json()
-        self.upstream_id = answer["sessionId"]
-        await self.pc.setRemoteDescription(RTCSessionDescription(type=answer["type"], sdp=answer["sdp"]))
-        await asyncio.wait_for(self.channel_open.wait(), self.settings.connect_timeout_s)
+        async with asyncio.timeout(self.settings.connect_timeout_s):
+            await self.pc.setLocalDescription(await self.pc.createOffer())
+            response = await self.http.post("/api/v1/webrtc/offer", json={"type": self.pc.localDescription.type, "sdp": self.pc.localDescription.sdp, "initialParameters": parameters}, timeout=self.settings.connect_timeout_s)
+            response.raise_for_status()
+            answer = response.json()
+            self.upstream_id = answer["sessionId"]
+            await self.pc.setRemoteDescription(RTCSessionDescription(type=answer["type"], sdp=answer["sdp"]))
+            await self.channel_open.wait()
         await asyncio.wait_for(self.first_frame.wait(), self.settings.first_frame_timeout_s)
 
     async def stop(self) -> bool:

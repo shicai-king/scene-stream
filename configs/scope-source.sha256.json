@@ -1,0 +1,10 @@
+{
+  "commit": "2aced4ded3513a76cd35f0dbfb42fbfbf5e98ab0",
+  "src_tree_sha256": "3903e24712ded84c0ce2e60073c7795b10ca13b77bb9d35300951b69ac91ba0d",
+  "files_sha256": {
+    "uv.lock": "50f8c81ad959cf07d2bdc09c1d9d9d5dbc08fb50660c9858bc738f21338d18c4",
+    "pyproject.toml": "d99eecdd1aa2f60e351cf47f12b3da74b7644c2d78dfb411316d54d9ec33d5b4",
+    ".python-version": "db3ef967a80f30770e652243d4e8292c73ee214e182ada70ce045e91aab40fa7",
+    "patches.pth": "e83898da9cd4fca63aaebd5ca9b442428767dc74b3cc81baa6c9371e72f13022"
+  }
+}

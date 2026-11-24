@@ -60,6 +60,8 @@ The hub never mounts the Docker socket. The supervisor never accepts a client PI
 
 Separate settings control viewer heartbeats/lease, connection deadline, first-frame deadline, media-stall detection, reset RPC, process startup, and pipeline readiness. Heartbeats cannot extend an upstream connection deadline. Media-stall detection applies to LIVE sources even if the browser continues heartbeats.
 
+The upstream connection deadline starts after model loading and covers ICE gathering, the offer exchange, remote description and parameter-channel opening as one cumulative budget. First-frame waiting starts afterward with its independent limit. Room startup can therefore include a separate, longer model-loading phase.
+
 ## Measurements and acceptance
 
 - Level 1: state/concurrency/failure tests, true Mock WebRTC frames, shared-viewer browser checks, danmaku/prompt isolation, matching API contract and frontend build.

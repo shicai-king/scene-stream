@@ -8,5 +8,6 @@ ENV DISABLE_SAGEATTENTION=1 \
     TRANSFORMERS_OFFLINE=1 \
     DO_NOT_TRACK=1
 COPY deploy/supervisor.py deploy/scope_bootstrap.py /opt/longlive/
+COPY scripts/probe_gpu.py /opt/longlive/probe_gpu.py
 EXPOSE 8000 9100
 CMD ["/app/.venv/bin/python", "-m", "uvicorn", "supervisor:app", "--app-dir", "/opt/longlive", "--host", "0.0.0.0", "--port", "9100"]

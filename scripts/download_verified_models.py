@@ -10,7 +10,7 @@ import json
 import os
 from pathlib import Path
 import time
-from urllib.parse import quote
+from urllib.parse import quote, urlsplit
 from urllib.request import Request, urlopen
 
 
@@ -31,7 +31,7 @@ def download_file(repo, expected, args):
     parts.mkdir(parents=True, exist_ok=True)
     chunk_size = args.chunk_mb * 1024 * 1024
     count = (expected["size"] + chunk_size - 1) // chunk_size
-    url = f"https://huggingface.co/{repo['repo_id']}/resolve/{repo['revision']}/{quote(expected['path'])}?download=true"
+    url = f"{args.endpoint.rstrip('/')}/{repo['repo_id']}/resolve/{repo['revision']}/{quote(expected['path'])}?download=true"
 
     def fetch(index):
         start = index * chunk_size
@@ -97,9 +97,12 @@ def main():
     parser.add_argument("--manifest", default="configs/models.sha256.json")
     parser.add_argument("--parts", default="cache/model-parts")
     parser.add_argument("--repo")
+    parser.add_argument("--endpoint", default="https://huggingface.co", help="Optional HTTPS mirror; official manifest SHA256 checks remain mandatory")
     parser.add_argument("--workers", type=int, default=4, choices=range(1, 17))
     parser.add_argument("--chunk-mb", type=int, default=32, choices=range(1, 129))
     args = parser.parse_args()
+    if urlsplit(args.endpoint).scheme != "https":
+        parser.error("Model endpoint must use HTTPS")
     manifest = json.loads(Path(args.manifest).read_text())
     repositories = [r for r in manifest["repositories"] if not args.repo or r["repo_id"] == args.repo]
     if not repositories:

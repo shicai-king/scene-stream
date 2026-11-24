@@ -42,12 +42,7 @@ docker compose down
 
 ```bash
 mkdir -p models logs results/raw
-docker run --rm \
-  -v "$PWD:/project" -w /project \
-  -v "$PWD/models:/models" \
-  -e HF_HUB_DISABLE_IMPLICIT_TOKEN=1 -e HF_HUB_DISABLE_TELEMETRY=1 \
-  ghcr.io/daydreamlive/scope@sha256:3bed0bf78d7a6cf6b467912c9985eebf7d5479d0401cbbc5f07ed8f58ce9dfef \
-  /app/.venv/bin/python scripts/download_models.py
+python3 scripts/download_verified_models.py
 python3 scripts/verify_models.py
 ```
 
@@ -80,6 +75,8 @@ docker compose -f compose.scope.local.yaml down
 只使用本项目 Compose 文件和项目名停止服务。不要按 GPU 编号批量终止其他人的进程。
 
 ## 实现约定
+
+Docker 系统盘空间较小时，可使用[共享磁盘运行环境方案](docs/shared-disk-runtime.md)，将模型和 Python 环境放在项目数据盘，并以只读挂载接入小型应用镜像。
 
 - FastAPI 单管理进程；真实后端、Mock、Worker 数量、分辨率、超时都由配置控制。
 - Scope Worker 每个进程只承载一个生成房间。进程内 supervisor 只重启自己创建的子进程；模型重新就绪后才释放槽位。

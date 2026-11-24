@@ -7,3 +7,4 @@ ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 COPY longlive/ /app/longlive/
 COPY dist/ /app/dist/
 COPY deploy/supervisor.py deploy/scope_bootstrap.py /opt/longlive/
+COPY scripts/probe_gpu.py /opt/longlive/probe_gpu.py

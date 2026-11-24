@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import base64
 import os
+import json
 from urllib.parse import urlsplit, unquote
 
 ALLOWED = ("github.com", "githubusercontent.com", "ghcr.io", "huggingface.co", "hf.co", "xethub.hf.co", "pypi.org", "pythonhosted.org", "pytorch.org", "docker.io", "docker.com", "cloudflarestorage.com")
@@ -35,8 +36,9 @@ async def handle(reader, writer):
                 auth = "Proxy-Authorization: Basic " + base64.b64encode(credentials.encode()).decode() + "\r\n"
             upstream.write(f"CONNECT {host}:443 HTTP/1.1\r\nHost: {host}:443\r\n{auth}\r\n".encode())
             await upstream.drain()
-            response = await asyncio.wait_for(remote_reader.readuntil(b"\r\n\r\n"), 20)
+            response = await asyncio.wait_for(remote_reader.readuntil(b"\r\n\r\n"), 60)
             if response.split(b"\r\n", 1)[0].split()[1] != b"200":
+                print(json.dumps({"event": "upstream_proxy_error", "host": host, "status": response.split(b"\r\n", 1)[0].decode(errors="replace")}), flush=True)
                 return
         else:
             remote_reader, upstream = await asyncio.wait_for(asyncio.open_connection(host, 443), 20)
@@ -57,8 +59,8 @@ async def handle(reader, writer):
 
         tasks = [asyncio.create_task(copy(reader, upstream)), asyncio.create_task(copy(remote_reader, writer)), asyncio.create_task(idle_watchdog())]
         await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-    except (OSError, ValueError, TimeoutError, asyncio.IncompleteReadError, asyncio.LimitOverrunError):
-        pass
+    except (OSError, ValueError, TimeoutError, asyncio.IncompleteReadError, asyncio.LimitOverrunError) as error:
+        print(json.dumps({"event": "proxy_connection_error", "error_type": type(error).__name__}), flush=True)
     finally:
         for task in tasks:
             task.cancel()

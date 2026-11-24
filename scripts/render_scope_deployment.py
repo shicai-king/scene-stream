@@ -21,6 +21,7 @@ base["workers"] = []
 services = {"hub": {"build": {"context": ".", "args": {"NODE_IMAGE": args.node_image}}, "image": "longlive-rooms:0.1.0", "init": True, "restart": "unless-stopped", "ports": [f"127.0.0.1:{args.port}:8080"], "environment": {"WORKER_CONFIG_PATH": "/app/configs/workers.local.yaml", "LOG_PATH": "/app/logs/events.jsonl"}, "volumes": ["./configs/workers.local.yaml:/app/configs/workers.local.yaml:ro", "./logs:/app/logs"], "depends_on": {}}}
 for i, gpu in enumerate(ids):
     name = f"worker-{i+1}"
+    Path("logs", name).mkdir(parents=True, exist_ok=True)
     base["workers"].append({"id": name, "backend": "scope", "endpoint": f"http://{name}:8000", "control_endpoint": f"http://{name}:9100", "launch_mode": "managed", "pipeline_id": "longlive", "width": args.width, "height": args.height, "seed": 42+i})
     services[name] = {"build": {"context": ".", "dockerfile": "deploy/Dockerfile.scope", "args": {"SCOPE_IMAGE": args.scope_image}}, "image": "longlive-scope:0.2.5", "init": True, "restart": "unless-stopped", "shm_size": "2gb", "environment": {"CUDA_VISIBLE_DEVICES": "0", "NVIDIA_VISIBLE_DEVICES": gpu, "DISABLE_SAGEATTENTION": "1", "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}, "volumes": ["./models:/models", f"./logs/{name}:/logs"], "expose": ["8000", "9100"], "deploy": {"resources": {"reservations": {"devices": [{"driver": "nvidia", "device_ids": [gpu], "capabilities": ["gpu"]}]}}}, "healthcheck": {"test": ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/healthz', timeout=2)"], "interval": "10s", "timeout": "3s", "start_period": "90s", "retries": 12}}
     services["hub"]["depends_on"][name] = {"condition": "service_healthy"}
@@ -48,7 +49,7 @@ if args.runtime_root:
         else:
             python = str(runtime / "scope-env/bin/python")
             service["volumes"].extend([f"{runtime / 'scope-env'}:{runtime / 'scope-env'}:ro", f"{project / 'vendor/scope/src'}:{project / 'vendor/scope/src'}:ro"])
-            service["environment"].update({"DAYDREAM_SCOPE_MODELS_DIR": "/models", "DAYDREAM_SCOPE_LOGS_DIR": "/logs", "OMP_NUM_THREADS": "8", "MKL_NUM_THREADS": "8"})
+            service["environment"].update({"DAYDREAM_SCOPE_MODELS_DIR": "/models", "DAYDREAM_SCOPE_LOGS_DIR": "/logs", "DAYDREAM_SCOPE_ASSETS_DIR": "/tmp/longlive/assets", "OMP_NUM_THREADS": "8", "MKL_NUM_THREADS": "8"})
             service["command"] = [python, "-m", "uvicorn", "supervisor:app", "--app-dir", "/opt/longlive", "--host", "0.0.0.0", "--port", "9100"]
             service["healthcheck"]["test"][1] = python
 Path("configs/workers.local.yaml").write_text(yaml.safe_dump(base, allow_unicode=True, sort_keys=False))
