@@ -1,0 +1,9 @@
+# Low-system-disk variant: dependencies live in explicitly mounted read-only venvs.
+# Base image is imported/verified against the digest in configs/images.lock.json.
+ARG RUNTIME_IMAGE=ghcr.io/astral-sh/uv@sha256:ef305979f94d4729707a0fc98444ebf1bc0e63a2d2919a62d28fcc3e42957508
+FROM ${RUNTIME_IMAGE}
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
+COPY longlive/ /app/longlive/
+COPY dist/ /app/dist/
+COPY deploy/supervisor.py deploy/scope_bootstrap.py /opt/longlive/

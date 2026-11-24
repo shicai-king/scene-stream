@@ -45,3 +45,10 @@ results/raw/
 *.mp4
 *.webm
 .DS_Store
+vendor/
+artifacts/
+cache/
+tools/crane
+tools/uv
+runtime/
+.download-venv/

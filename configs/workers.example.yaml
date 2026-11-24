@@ -1,0 +1,18 @@
+schema_version: 1
+workers:
+  - id: mock-1
+    backend: mock
+  - id: mock-2
+    backend: mock
+rooms:
+  - id: night-walk
+    name: 雨夜漫游
+    color: '#a78bfa'
+    initial_prompt: A cinematic tracking shot through a neon-lit city at night, rain reflecting colorful lights, smooth camera motion.
+  - id: floating-garden
+    name: 漂浮花园
+    color: '#64d8bb'
+    initial_prompt: A dreamy floating garden above the clouds, flowers swaying in the breeze, golden sunlight, cinematic slow camera movement.
+auto_start: true
+media_fps: 24
+jpeg_quality: 78

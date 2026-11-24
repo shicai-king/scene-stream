@@ -1,0 +1,10 @@
+{
+  "scope_commit": "2aced4ded3513a76cd35f0dbfb42fbfbf5e98ab0",
+  "scope_version": "0.2.5",
+  "repositories": [
+    {"repo_id": "daydreamlive/Wan2.1-T2V-1.3B", "revision": "d19e4465081f6ad9b1f61166e287453e4b8453f3", "allow_patterns": ["config.json", "Wan2.1_VAE.pth", "google/**"]},
+    {"repo_id": "daydreamlive/WanVideo_comfy", "revision": "441f3d5bd87f43de634698000157d893ddc99684", "allow_patterns": ["config.json", "umt5-xxl-enc-fp8_e4m3fn.safetensors", "Wan2_1-VACE_module_1_3B_bf16.safetensors"]},
+    {"repo_id": "daydreamlive/Autoencoders", "revision": "15b3be9cd154e089c560c094386659e027ab8a86", "allow_patterns": ["config.json", "lightvaew2_1.pth", "taew2_1.pth", "lighttaew2_1.pth"]},
+    {"repo_id": "daydreamlive/LongLive-1.3B", "revision": "7735d25c7944e4497fa5882aaf7a3bdc9c1fda32", "allow_patterns": ["config.json", "models/longlive_base.pt", "models/lora.pt"]}
+  ]
+}

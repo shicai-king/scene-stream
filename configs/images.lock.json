@@ -1,0 +1,12 @@
+{
+  "scope": {
+    "image": "ghcr.io/daydreamlive/scope:0.2.5",
+    "digest": "sha256:3bed0bf78d7a6cf6b467912c9985eebf7d5479d0401cbbc5f07ed8f58ce9dfef",
+    "source_commit": "2aced4ded3513a76cd35f0dbfb42fbfbf5e98ab0"
+  },
+  "python_runtime": {
+    "image": "ghcr.io/astral-sh/uv:0.9.11-python3.12-bookworm-slim",
+    "digest": "sha256:ef305979f94d4729707a0fc98444ebf1bc0e63a2d2919a62d28fcc3e42957508",
+    "linux_amd64_image_id": "sha256:218b189e090ac07269b9e62d71424338a2cdbeef42672a2852d8b01bc56f0582"
+  }
+}

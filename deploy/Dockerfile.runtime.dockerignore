@@ -1,0 +1,8 @@
+**
+!longlive/
+!longlive/**
+!dist/
+!dist/**
+!deploy/
+!deploy/supervisor.py
+!deploy/scope_bootstrap.py

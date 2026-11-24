@@ -1,0 +1,147 @@
+{
+  "scope_commit": "2aced4ded3513a76cd35f0dbfb42fbfbf5e98ab0",
+  "generated_at": "2026-11-24T11:50:21.427546+00:00",
+  "authority": "https://huggingface.co (official API and pinned raw content; no credentials sent)",
+  "repositories": [
+    {
+      "repo_id": "daydreamlive/Wan2.1-T2V-1.3B",
+      "revision": "d19e4465081f6ad9b1f61166e287453e4b8453f3",
+      "source": "https://huggingface.co/api/models/daydreamlive/Wan2.1-T2V-1.3B/tree/d19e4465081f6ad9b1f61166e287453e4b8453f3?recursive=true&expand=false",
+      "files": [
+        {
+          "path": "Wan2.1_VAE.pth",
+          "size": 507609880,
+          "sha256": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "5897fba405232a6b07a947d6188d19a8e050ccfb"
+        },
+        {
+          "path": "config.json",
+          "size": 249,
+          "sha256": "ab37994c43740513f94b3ba6233a784035a67b43c8cde83c8f31aa90468c67ce",
+          "git_blob_sha1": "d203bef600b2f3c64fe1f5f53d70a2087f4ccd2f",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        },
+        {
+          "path": "google/umt5-xxl/special_tokens_map.json",
+          "size": 6623,
+          "sha256": "7b8a9f5040adb67b5805abdfd42c1f8d0f3d0e711f10726580eb3789cd0ad61d",
+          "git_blob_sha1": "14855e7052ffbb595057dfd791d293c1c940db2c",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        },
+        {
+          "path": "google/umt5-xxl/spiece.model",
+          "size": 4548313,
+          "sha256": "e3909a67b780650b35cf529ac782ad2b6b26e6d1f849d3fbb6a872905f452458",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "2fe5f347e9f9367585589ae89e997dfbd5cf802c"
+        },
+        {
+          "path": "google/umt5-xxl/tokenizer.json",
+          "size": 16837417,
+          "sha256": "6e197b4d3dbd71da14b4eb255f4fa91c9c1f2068b20a2de2472967ca3d22602b",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "7bd4ee3cf5633e49c0e06a3aac2a621559e6222a"
+        },
+        {
+          "path": "google/umt5-xxl/tokenizer_config.json",
+          "size": 61728,
+          "sha256": "ed9a3a8b0faa71a70a32847e0435fe036e6e112d4df4edb7bb48a921e344dc05",
+          "git_blob_sha1": "4e1cc1cd85599ce0b47fd0a746af188fe4043ff2",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        }
+      ]
+    },
+    {
+      "repo_id": "daydreamlive/WanVideo_comfy",
+      "revision": "441f3d5bd87f43de634698000157d893ddc99684",
+      "source": "https://huggingface.co/api/models/daydreamlive/WanVideo_comfy/tree/441f3d5bd87f43de634698000157d893ddc99684?recursive=true&expand=false",
+      "files": [
+        {
+          "path": "Wan2_1-VACE_module_1_3B_bf16.safetensors",
+          "size": 1469996897,
+          "sha256": "cbcab35a0fbececa5d0b64af7f1ac1101c3fc61191c407f0d67301ac56fb0574",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "5e82d420ef75a4866d767bbd5fcea209cd134527"
+        },
+        {
+          "path": "config.json",
+          "size": 127,
+          "sha256": "28e0e1989ef480b24ab65db790f47f7ae7fce5d57ddf8d26c4844c027f4feb62",
+          "git_blob_sha1": "84d0e736b2589d8c833d2490101f62413f568cce",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        },
+        {
+          "path": "umt5-xxl-enc-fp8_e4m3fn.safetensors",
+          "size": 6731333792,
+          "sha256": "3fe5173588270c22505d4f9158bb1644b78331b8614206a97e92760b960c9ffa",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "7f925b518d3d018d3e94af46675ffa567b77920e"
+        }
+      ]
+    },
+    {
+      "repo_id": "daydreamlive/Autoencoders",
+      "revision": "15b3be9cd154e089c560c094386659e027ab8a86",
+      "source": "https://huggingface.co/api/models/daydreamlive/Autoencoders/tree/15b3be9cd154e089c560c094386659e027ab8a86?recursive=true&expand=false",
+      "files": [
+        {
+          "path": "config.json",
+          "size": 132,
+          "sha256": "70fe604bda452fdab05e86f31846bc248a877f8a8c2560ddf749ee06b8b27e62",
+          "git_blob_sha1": "76f395b0e6de31220a89cc7144accd664c575ca9",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        },
+        {
+          "path": "lighttaew2_1.pth",
+          "size": 45301802,
+          "sha256": "7c55c7d6b8eb3d24c7daca1295dea803fb847411e2c67bceecbb286f4dfdbef5",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "49786dff3305730a79d05ca62947202c721233f8"
+        },
+        {
+          "path": "lightvaew2_1.pth",
+          "size": 32208043,
+          "sha256": "d5d6b094d4829fb03b6179be2cf4589baab21c9fea1ca70dcaa8c85ba8183ec9",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "c1819c90d55e312713a12e36aad8f384420315f0"
+        },
+        {
+          "path": "taew2_1.pth",
+          "size": 22679486,
+          "sha256": "f986092baa4a124035dcf44ef59cd30e0bef91b2aa4d6a6e8e152e55e82ca30c",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "0c0c5cbb840279a6742e04b8a0881f58d428cdfc"
+        }
+      ]
+    },
+    {
+      "repo_id": "daydreamlive/LongLive-1.3B",
+      "revision": "7735d25c7944e4497fa5882aaf7a3bdc9c1fda32",
+      "source": "https://huggingface.co/api/models/daydreamlive/LongLive-1.3B/tree/7735d25c7944e4497fa5882aaf7a3bdc9c1fda32?recursive=true&expand=false",
+      "files": [
+        {
+          "path": "config.json",
+          "size": 136,
+          "sha256": "27c91bfc365a35d0b59bac24f9f889805459ea357e3381aab058071b6ac2981a",
+          "git_blob_sha1": "f4c4b177d1476b64f9776037946274e4268d3df4",
+          "hash_source": "sha256_of_official_pinned_raw_bytes_verified_against_git_blob_sha1"
+        },
+        {
+          "path": "models/longlive_base.pt",
+          "size": 5676334208,
+          "sha256": "10a2aa8fcf89c77d9033f4c117405412a690e289625766619d293f0c5a208ee7",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "859da9d8652671be2224fc0ec888bf653aad7396"
+        },
+        {
+          "path": "models/lora.pt",
+          "size": 2800056690,
+          "sha256": "c4e43b87d62d4b0614b496773639f1ab170a7ee486dc23407901e9d3a5ebc07a",
+          "hash_source": "official_huggingface_api_lfs_oid",
+          "git_blob_sha1": "f2087170b081885893222adbb1391956d528e1c0"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+ARG SCOPE_IMAGE=ghcr.io/daydreamlive/scope@sha256:3bed0bf78d7a6cf6b467912c9985eebf7d5479d0401cbbc5f07ed8f58ce9dfef
+FROM ${SCOPE_IMAGE}
+ENV DISABLE_SAGEATTENTION=1 \
+    DAYDREAM_SCOPE_MODELS_DIR=/models \
+    DAYDREAM_SCOPE_LOGS_DIR=/logs \
+    HF_HUB_DISABLE_TELEMETRY=1 \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    DO_NOT_TRACK=1
+COPY deploy/supervisor.py deploy/scope_bootstrap.py /opt/longlive/
+EXPOSE 8000 9100
+CMD ["/app/.venv/bin/python", "-m", "uvicorn", "supervisor:app", "--app-dir", "/opt/longlive", "--host", "0.0.0.0", "--port", "9100"]

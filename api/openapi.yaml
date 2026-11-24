@@ -1,0 +1,546 @@
+openapi: 3.1.0
+info:
+  title: LongLive Shared Rooms
+  description: Shared generation rooms, latest-wins prompts and multiplexed viewer
+    streams. A sent prompt is not proof of visual adoption.
+  version: 3.0.0
+paths:
+  /healthz:
+    get:
+      summary: Health
+      operationId: health_healthz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /readyz:
+    get:
+      summary: Ready
+      operationId: ready_readyz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/info:
+    get:
+      summary: Info
+      operationId: info_api_v1_info_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/capacity:
+    get:
+      summary: Capacity
+      operationId: capacity_api_v1_capacity_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capacity'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms:
+    get:
+      summary: List Rooms
+      operationId: list_rooms_api_v1_rooms_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 50
+          title: Limit
+      - name: cursor
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Cursor
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomList'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+    post:
+      summary: Create Room
+      operationId: create_room_api_v1_rooms_post
+      parameters:
+      - name: idempotency-key
+        in: header
+        required: true
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 128
+          title: Idempotency-Key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoom'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomView'
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomView'
+          description: OK
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms/{room_id}:
+    get:
+      summary: Get Room
+      operationId: get_room_api_v1_rooms__room_id__get
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomView'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms/{room_id}/start:
+    post:
+      summary: Start Room
+      operationId: start_room_api_v1_rooms__room_id__start_post
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomView'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms/{room_id}/stop:
+    post:
+      summary: Stop Room
+      operationId: stop_room_api_v1_rooms__room_id__stop_post
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomView'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms/{room_id}/prompts:
+    post:
+      summary: Prompt
+      operationId: prompt_api_v1_rooms__room_id__prompts_post
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptRequest'
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptView'
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+  /api/v1/rooms/{room_id}/history:
+    get:
+      summary: History
+      operationId: history_api_v1_rooms__room_id__history_get
+      parameters:
+      - name: room_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Room Id
+      - name: after_seq
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: After Seq
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PromptView'
+                title: Response History Api V1 Rooms  Room Id  History Get
+        '400':
+          description: Invalid request; error.code/message/request_id envelope
+        '404':
+          description: Room not found
+        '409':
+          description: Invalid state or idempotency conflict
+        '429':
+          description: Capacity exhausted
+components:
+  schemas:
+    Capacity:
+      properties:
+        total_slots:
+          type: integer
+          title: Total Slots
+        active_sessions:
+          type: integer
+          title: Active Sessions
+        reserved_sessions:
+          type: integer
+          title: Reserved Sessions
+        resetting_slots:
+          type: integer
+          title: Resetting Slots
+        quarantined_slots:
+          type: integer
+          title: Quarantined Slots
+        available_slots:
+          type: integer
+          title: Available Slots
+        effective_limit:
+          type: integer
+          title: Effective Limit
+        policy:
+          type: string
+          title: Policy
+          default: reject
+      type: object
+      required:
+      - total_slots
+      - active_sessions
+      - reserved_sessions
+      - resetting_slots
+      - quarantined_slots
+      - available_slots
+      - effective_limit
+      title: Capacity
+    CreateRoom:
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          minLength: 1
+          title: Name
+        initial_prompt:
+          type: string
+          maxLength: 1500
+          minLength: 1
+          title: Initial Prompt
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - initial_prompt
+      title: CreateRoom
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PromptRequest:
+      properties:
+        client_id:
+          type: string
+          maxLength: 80
+          minLength: 1
+          pattern: ^[A-Za-z0-9_-]+$
+          title: Client Id
+        message_id:
+          type: string
+          maxLength: 100
+          minLength: 1
+          pattern: ^[A-Za-z0-9_-]+$
+          title: Message Id
+        nickname:
+          type: string
+          maxLength: 24
+          minLength: 1
+          title: Nickname
+          default: 观众
+        text:
+          type: string
+          maxLength: 1500
+          minLength: 1
+          title: Text
+      additionalProperties: false
+      type: object
+      required:
+      - client_id
+      - message_id
+      - text
+      title: PromptRequest
+    PromptView:
+      properties:
+        id:
+          type: string
+          title: Id
+        seq:
+          type: integer
+          title: Seq
+        nickname:
+          type: string
+          title: Nickname
+        text:
+          type: string
+          title: Text
+        status:
+          type: string
+          enum:
+          - accepted
+          - superseded
+          - sent
+          - expired
+          - failed
+          title: Status
+        accepted_at:
+          type: string
+          title: Accepted At
+        sent_at:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Sent At
+      type: object
+      required:
+      - id
+      - seq
+      - nickname
+      - text
+      - status
+      - accepted_at
+      title: PromptView
+    RoomList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/RoomView'
+          type: array
+          title: Items
+        next_cursor:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Next Cursor
+      type: object
+      required:
+      - items
+      - next_cursor
+      title: RoomList
+    RoomView:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        color:
+          type: string
+          title: Color
+        initial_prompt:
+          type: string
+          title: Initial Prompt
+        current_prompt:
+          type: string
+          title: Current Prompt
+        state:
+          type: string
+          title: State
+        backend:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Backend
+        viewers:
+          type: integer
+          title: Viewers
+        frame_seq:
+          type: integer
+          title: Frame Seq
+        source_frames:
+          type: integer
+          title: Source Frames
+        source_fps:
+          type: number
+          title: Source Fps
+        first_frame_ms:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: First Frame Ms
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+        prompt_seq:
+          type: integer
+          title: Prompt Seq
+      type: object
+      required:
+      - id
+      - name
+      - color
+      - initial_prompt
+      - current_prompt
+      - state
+      - backend
+      - viewers
+      - frame_seq
+      - source_frames
+      - source_fps
+      - first_frame_ms
+      - error
+      - prompt_seq
+      title: RoomView
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError

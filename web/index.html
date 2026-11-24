@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101014" />
+  <title>LongLive · 让想象持续发生</title>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="/" aria-label="LongLive 首页"><span class="brand-mark">L<span></span></span><strong>LongLive<span>实时影像共创</span></strong></a>
+      <div class="nav-label">探索直播间 <span id="room-total">0</span></div>
+      <nav id="room-list" aria-label="直播间列表" data-testid="room-list"></nav>
+      <button class="new-room" id="new-room"><span>＋</span> 新建直播间</button>
+      <div class="sidebar-bottom"><span class="small-orbit">✳</span><p>每一句想象，<br>都能成为下一帧。</p><div class="capacity"><span id="capacity-text">正在连接服务</span><span class="capacity-bar"><i id="capacity-fill"></i></span></div></div>
+    </aside>
+    <div class="workspace">
+      <header class="topbar"><div><span class="breadcrumb">创作空间</span><span class="divider">/</span><span>直播</span></div><div class="top-right"><span class="private-label">课程演示</span><button class="avatar" id="edit-name" title="修改你的昵称" aria-label="修改昵称">你</button></div></header>
+      <main>
+        <section class="room-heading"><div><div class="eyebrow">LIVE CANVAS</div><h1 id="room-title">选择一个直播间</h1><p>共同观看，也共同改变正在发生的画面。</p></div><button id="room-toggle" class="quiet-button" disabled>准备中</button></section>
+        <div class="live-layout">
+          <section class="view-column" aria-label="实时视频">
+            <div class="stage" id="stage">
+              <canvas id="video-canvas" data-testid="video-canvas" width="576" height="320" aria-label="当前直播间实时画面"></canvas>
+              <div class="stage-placeholder" id="stage-placeholder"><div class="orbit-art"><i></i><i></i><i></i><span>✳</span></div><h2 id="placeholder-title">等待画面抵达</h2><p id="placeholder-detail">连接直播间后，想象将在这里展开</p></div>
+              <div class="stage-top"><span class="live-badge" id="live-badge">连接中</span><span class="model-badge" id="model-badge"></span></div>
+              <div class="danmaku-layer" id="danmaku-layer" aria-hidden="true"></div>
+              <div class="stage-bottom"><span id="viewer-count">0 人正在观看</span><button id="toggle-danmaku" aria-pressed="true" title="显示或隐藏弹幕">弹幕 开</button><button id="fullscreen" title="全屏观看" aria-label="全屏观看">⛶</button></div>
+            </div>
+            <div class="stream-details"><div><span class="signal-icon">▥</span><strong id="stream-status">等待连接</strong><span class="subtle" id="stream-fps">— fps</span></div><span class="subtle" id="stream-latency">共享实时画面</span></div>
+            <div class="prompt-card"><div class="card-label"><span class="spark">✦</span> 最新投递提示词</div><p id="current-prompt">从右侧发送一句话，让画面跟随你的想象。</p><span class="prompt-footnote">画面会随生成进度逐步变化</span></div>
+            <div class="inspiration"><span>试试这些灵感</span><button data-prompt="A spectacular meteor shower crosses the night sky, glowing trails, cinematic wide shot.">一场流星雨</button><button data-prompt="The scene transforms into a colorful underwater world, glowing jellyfish drifting slowly, cinematic.">潜入海底</button><button data-prompt="Warm golden sunset light fills the scene, gentle wind, peaceful atmosphere, cinematic.">日落时分</button></div>
+          </section>
+          <section class="chat-panel" aria-label="直播间弹幕">
+            <div class="chat-heading"><h2>共同想象</h2><span id="message-count">0 条弹幕</span></div>
+            <div class="chat-notice"><span>✦</span><p>每条提示词都会成为弹幕，<br>画面优先响应最新的想法。</p></div>
+            <div class="messages" id="messages" role="log" aria-live="polite"><div class="chat-empty" id="chat-empty"><span>✧</span><p>灵感从你开始</p><small>发送第一条提示词</small></div></div>
+            <form id="prompt-form" class="composer"><div class="composer-name"><span class="mini-avatar">你</span><span id="nickname-label">观众</span><span id="char-count">0 / 1500</span></div><label class="sr-only" for="prompt-input">输入提示词</label><textarea id="prompt-input" data-testid="prompt-input" maxlength="1500" rows="3" placeholder="想让下一刻发生什么？" required></textarea><div class="composer-footer"><span>Enter 发送 · Shift + Enter 换行</span><button type="submit" id="send-prompt" data-testid="send-prompt" disabled>发送</button></div></form>
+          </section>
+        </div>
+        <footer class="page-footer"><span>LONG LIVE YOUR IMAGINATION.</span><span>持续生成 · 共享观看 · 即时共创</span></footer>
+      </main>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <dialog id="create-dialog"><form id="create-form"><div class="dialog-heading"><h2>开启一个新世界</h2><button type="button" class="icon-button" id="close-dialog" aria-label="关闭">×</button></div><label>直播间名称<input name="name" maxlength="60" placeholder="给这个世界起个名字" required /></label><label>最初的画面<textarea name="initial_prompt" maxlength="1500" rows="4" placeholder="描述你想看到的场景…" required></textarea></label><p>每个直播间使用独立的生成资源，观众共享同一画面。</p><button type="submit" class="primary-button">创建并开始直播</button></form></dialog>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
