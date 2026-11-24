@@ -46,6 +46,15 @@ python3 scripts/download_verified_models.py
 python3 scripts/verify_models.py
 ```
 
+若服务器访问 Hugging Face 较慢，可使用已核对文件哈希的国内镜像。镜像只改变下载地址；全部文件仍须通过原始官方清单的 SHA256 校验。已完成的分块可在重跑时复用。
+
+```bash
+python3 scripts/download_verified_models.py --mirrors configs/models.mirrors.json --workers 8 --file-workers 2
+python3 scripts/verify_models.py
+```
+
+`--workers` 是每个文件的分块并发数，`--file-workers` 是同时下载的文件数。未列入镜像清单的配置和分词器文件仍从 Hugging Face 下载；可用 `--endpoint` 指定 HTTPS 镜像，哈希要求保持不变。
+
 2. 生成当前部署的 Worker 清单和 Compose 文件。这两个 `.local.yaml` 文件包含设备与部署参数，被 Git 忽略。
 
 ```bash

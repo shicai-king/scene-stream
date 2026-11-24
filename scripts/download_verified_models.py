@@ -7,7 +7,6 @@ import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import hashlib
 import json
-import os
 from pathlib import Path
 import time
 from urllib.parse import quote, urlsplit
@@ -32,6 +31,11 @@ def download_file(repo, expected, args):
     chunk_size = args.chunk_mb * 1024 * 1024
     count = (expected["size"] + chunk_size - 1) // chunk_size
     url = f"{args.endpoint.rstrip('/')}/{repo['repo_id']}/resolve/{repo['revision']}/{quote(expected['path'])}?download=true"
+    mirror = args.mirror_map.get(expected["sha256"])
+    if mirror:
+        if mirror["size"] != expected["size"] or urlsplit(mirror["url"]).scheme != "https":
+            raise ValueError("Mirror metadata does not match the pinned file")
+        url = mirror["url"]
 
     def fetch(index):
         start = index * chunk_size
@@ -97,19 +101,25 @@ def main():
     parser.add_argument("--manifest", default="configs/models.sha256.json")
     parser.add_argument("--parts", default="cache/model-parts")
     parser.add_argument("--repo")
+    parser.add_argument("--mirrors", help="Optional SHA256-keyed alternate download URL manifest")
     parser.add_argument("--endpoint", default="https://huggingface.co", help="Optional HTTPS mirror; official manifest SHA256 checks remain mandatory")
     parser.add_argument("--workers", type=int, default=4, choices=range(1, 17))
+    parser.add_argument("--file-workers", type=int, default=1, choices=range(1, 5), help="Concurrent files; each uses --workers range requests")
     parser.add_argument("--chunk-mb", type=int, default=32, choices=range(1, 129))
     args = parser.parse_args()
     if urlsplit(args.endpoint).scheme != "https":
         parser.error("Model endpoint must use HTTPS")
+    args.mirror_map = json.loads(Path(args.mirrors).read_text()) if args.mirrors else {}
     manifest = json.loads(Path(args.manifest).read_text())
     repositories = [r for r in manifest["repositories"] if not args.repo or r["repo_id"] == args.repo]
     if not repositories:
         parser.error("Requested repo is absent from the manifest")
-    for repo in repositories:
-        for expected in repo["files"]:
-            download_file(repo, expected, args)
+    jobs = [(repo, expected) for repo in repositories for expected in repo["files"]]
+    jobs.sort(key=lambda job: job[1]["size"], reverse=True)
+    with ThreadPoolExecutor(max_workers=args.file_workers) as executor:
+        futures = [executor.submit(download_file, repo, expected, args) for repo, expected in jobs]
+        for future in as_completed(futures):
+            future.result()
     print(json.dumps({"event": "all_downloads_verified"}), flush=True)
 
 

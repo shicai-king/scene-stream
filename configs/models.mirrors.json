@@ -1,0 +1,58 @@
+{
+  "10a2aa8fcf89c77d9033f4c117405412a690e289625766619d293f0c5a208ee7": {
+    "url": "https://modelscope.cn/api/v1/models/Efficient-Large-Model/LongLive-1.3B/repo?Revision=37bfd647569f558cbf5aaf46f2f1b11dcfdd0a21&FilePath=models%2Flonglive_base.pt",
+    "repo_id": "Efficient-Large-Model/LongLive-1.3B",
+    "revision": "37bfd647569f558cbf5aaf46f2f1b11dcfdd0a21",
+    "path": "models/longlive_base.pt",
+    "size": 5676334208,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "c4e43b87d62d4b0614b496773639f1ab170a7ee486dc23407901e9d3a5ebc07a": {
+    "url": "https://modelscope.cn/api/v1/models/Efficient-Large-Model/LongLive-1.3B/repo?Revision=37bfd647569f558cbf5aaf46f2f1b11dcfdd0a21&FilePath=models%2Flora.pt",
+    "repo_id": "Efficient-Large-Model/LongLive-1.3B",
+    "revision": "37bfd647569f558cbf5aaf46f2f1b11dcfdd0a21",
+    "path": "models/lora.pt",
+    "size": 2800056690,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "cbcab35a0fbececa5d0b64af7f1ac1101c3fc61191c407f0d67301ac56fb0574": {
+    "url": "https://modelscope.cn/api/v1/models/Kijai/WanVideo_comfy/repo?Revision=c38b59b03ceb53d5e16c192fd2ee71d43d924147&FilePath=Wan2_1-VACE_module_1_3B_bf16.safetensors",
+    "repo_id": "Kijai/WanVideo_comfy",
+    "revision": "c38b59b03ceb53d5e16c192fd2ee71d43d924147",
+    "path": "Wan2_1-VACE_module_1_3B_bf16.safetensors",
+    "size": 1469996897,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "3fe5173588270c22505d4f9158bb1644b78331b8614206a97e92760b960c9ffa": {
+    "url": "https://modelscope.cn/api/v1/models/Kijai/WanVideo_comfy/repo?Revision=93a0e158e512a5ab0092600a175bcadb6a3ef583&FilePath=umt5-xxl-enc-fp8_e4m3fn.safetensors",
+    "repo_id": "Kijai/WanVideo_comfy",
+    "revision": "93a0e158e512a5ab0092600a175bcadb6a3ef583",
+    "path": "umt5-xxl-enc-fp8_e4m3fn.safetensors",
+    "size": 6731333792,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "7c55c7d6b8eb3d24c7daca1295dea803fb847411e2c67bceecbb286f4dfdbef5": {
+    "url": "https://modelscope.cn/api/v1/models/lightx2v/Autoencoders/repo?Revision=ec1f10f7a7016610934ef313965c3115938f8dc3&FilePath=lighttaew2_1.pth",
+    "repo_id": "lightx2v/Autoencoders",
+    "revision": "ec1f10f7a7016610934ef313965c3115938f8dc3",
+    "path": "lighttaew2_1.pth",
+    "size": 45301802,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "d5d6b094d4829fb03b6179be2cf4589baab21c9fea1ca70dcaa8c85ba8183ec9": {
+    "url": "https://modelscope.cn/api/v1/models/lightx2v/Autoencoders/repo?Revision=ec1f10f7a7016610934ef313965c3115938f8dc3&FilePath=lightvaew2_1.pth",
+    "repo_id": "lightx2v/Autoencoders",
+    "revision": "ec1f10f7a7016610934ef313965c3115938f8dc3",
+    "path": "lightvaew2_1.pth",
+    "size": 32208043,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  },
+  "f986092baa4a124035dcf44ef59cd30e0bef91b2aa4d6a6e8e152e55e82ca30c": {
+    "url": "https://modelscope.cn/api/v1/models/lightx2v/Autoencoders/repo?Revision=ec1f10f7a7016610934ef313965c3115938f8dc3&FilePath=taew2_1.pth",
+    "repo_id": "lightx2v/Autoencoders",
+    "revision": "ec1f10f7a7016610934ef313965c3115938f8dc3",
+    "path": "taew2_1.pth",
+    "size": 22679486,
+    "authority": "ModelScope API metadata matches the official Hugging Face SHA256 manifest"
+  }
+}
