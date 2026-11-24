@@ -26,4 +26,8 @@ Consult each repository's model card and license at the pinned revision. The sou
 
 ## Libraries and build images
 
-Python and JavaScript dependencies retain their original licenses and notices. Exact packages are listed in `uv.lock`, the pinned Scope lockfile, and `package-lock.json`. Container sources and fingerprints are recorded in `configs/images.lock.json`; the Node build stage uses the official Node image. No third-party package source is vendored into the clean source archive.
+Python and JavaScript dependencies retain their original licenses and notices. Exact packages are listed in `uv.lock`, the pinned Scope lockfile, and `package-lock.json`. Container sources and fingerprints are recorded in `configs/images.lock.json`; the Node build stage uses the official Node image. Application dependency packages are not vendored into the clean source archive. The standalone educational guide includes the presentation assets listed below.
+
+## Design guide presentation assets
+
+`design-guide.html` embeds styles and interactive presentation controls supplied by Visual Explainer 0.14.0. Its supplied skill metadata credits **nicobailon** as author and declares **MIT** licensing. That declaration applies to those presentation assets; it does not select a license for LongLive Rooms. The authored explanation and teaching examples are maintained in `docs/design-guide.src.html`.

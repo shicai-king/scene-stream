@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="zh-CN" data-register="paper">
+<head>
+<title>LongLive Rooms · 把多人观看安排好</title>
+<link rel="stylesheet" href="kit.css" data-ve-kit>
+<style>
+:root{--accent:#216657;--accent-dim:#e8f0ed}
+body{font-family:"Noto Sans CJK SC","Microsoft YaHei",sans-serif;line-height:1.85}
+h1,h2,h3{font-family:Georgia,"Noto Serif CJK SC","Songti SC",serif;line-height:1.4}
+.layout{display:grid;grid-template-columns:180px minmax(0,1fr);gap:var(--s-6);max-width:1440px;padding:var(--s-5);margin:auto}
+main{min-width:0;max-width:none;margin:0;padding:0}header{margin-bottom:var(--s-5)}h1{font-size:var(--t-h1);max-width:21ch}h2{font-size:var(--t-h2);margin:var(--s-2) 0 var(--s-4)}h3{font-size:var(--t-h3);margin:0 0 var(--s-2)}p{max-width:68ch;margin:0 0 var(--s-3)}.lead{max-width:58ch}.meta,.fine{font-size:var(--t-small);color:var(--text-dim)}
+.side{position:sticky;top:var(--s-5);align-self:start;font-size:var(--t-small)}.side .brand{font-weight:700;margin-bottom:var(--s-3)}.side ul{list-style:none;padding:0;margin:0}.side a{display:block;padding:var(--s-1) var(--s-2);color:var(--text-dim);text-decoration:none;border:1px solid transparent}.side a[aria-current=true]{color:var(--accent);border-color:var(--border-bright);font-weight:700}.side .fine{margin-top:var(--s-4)}
+section{scroll-margin-top:var(--s-5);margin-top:var(--s-8);padding-top:var(--s-4);border-top:1px solid var(--border)}.eyebrow{font-size:var(--t-label);font-weight:700;color:var(--accent);letter-spacing:.08em}.read-note{border:1px dashed var(--border-bright);padding:var(--s-3);font-size:var(--t-small);margin:var(--s-4) 0}.frame{background:var(--surface);padding:var(--s-3);border:1px solid var(--border);border-radius:var(--r-2)}figure{margin:var(--s-4) 0 var(--s-5)}figcaption{font-size:var(--t-small);line-height:1.75;margin-top:var(--s-2);color:var(--text-dim)}figcaption strong{color:var(--text)}.columns{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-5)}.boundary{border:1px dashed var(--border-bright);padding:var(--s-4)}.boundary ul{padding-left:1.2em}.boundary li{margin:var(--s-2) 0}.small-label{font-size:var(--t-label);color:var(--text-dim);font-weight:700}.case-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s-4)}.case-list article{padding:var(--s-3) 0;border-top:2px solid var(--border-bright)}.case-list p{font-size:var(--t-small)}
+.buttons{display:flex;gap:var(--s-2);flex-wrap:wrap;margin:var(--s-4) 0 var(--s-2)}button{font:inherit;font-size:var(--t-small);padding:var(--s-2) var(--s-3);border:1px solid var(--border-bright);border-radius:var(--r-1);background:var(--bg);color:var(--text);cursor:pointer}button:hover,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}button:disabled{color:var(--text-dim);cursor:default;outline:none}input[type=range]{width:100%;accent-color:var(--accent)}label{display:block;font-size:var(--t-small)}.control-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-5);margin-bottom:var(--s-4)}output{font-variant-numeric:tabular-nums;font-weight:700}.explain{min-height:3.8em;margin-top:var(--s-3);font-size:var(--t-small)}.sim-status{padding:var(--s-3);border-top:1px solid var(--border-bright);margin-top:var(--s-3);font-size:var(--t-small)}.sim-status b{color:var(--accent)}
+.resource-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-4)}.resource{border:2px solid var(--border-bright);padding:var(--s-4);min-height:145px}.resource.free{border-style:dashed}.resource .state{font-size:var(--t-h3);font-weight:700;margin:var(--s-2) 0}.people{display:flex;flex-wrap:wrap;gap:var(--s-1);min-height:22px}.person{width:13px;height:20px;border:1.5px solid var(--accent);border-radius:var(--r-1);background:var(--accent-dim)}.counter-row{display:flex;gap:var(--s-5);flex-wrap:wrap;margin-top:var(--s-3);font-size:var(--t-small)}.counter-row strong{font-size:var(--t-h3);font-variant-numeric:tabular-nums}.sequence{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--s-3)}.sequence .step{padding:var(--s-3);border-top:3px solid var(--border-bright);font-size:var(--t-small)}.sequence .step b{display:block;margin:var(--s-2) 0;font-size:var(--t-body)}.state-track{display:flex;gap:var(--s-2);overflow-x:auto;padding:var(--s-2) 0}.state-track span{flex:1;min-width:98px;padding:var(--s-2);border:1px dashed var(--border-bright);text-align:center;font-size:var(--t-small)}.state-track .active{border:2px solid var(--accent);background:var(--accent-dim);font-weight:700}.state-track .passed{border-style:solid}
+.msg-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:var(--s-5)}.message-list{list-style:none;margin:0;padding:0;min-height:168px}.message-list li{display:grid;grid-template-columns:1fr auto;gap:var(--s-3);padding:var(--s-2) 0;border-bottom:1px solid var(--border);font-size:var(--t-small)}.message-list .muted{color:var(--text-dim)}.slot{padding:var(--s-3);border:2px dashed var(--border-bright);min-height:82px;margin:var(--s-2) 0 var(--s-3)}.slot.filled{border-style:solid}.slot strong{display:block;font-size:var(--t-h3);color:var(--accent)}.other-room{font-size:var(--t-small);padding-top:var(--s-3);border-top:1px solid var(--border)}
+.film-row{display:grid;grid-template-columns:150px 1fr 1fr;gap:var(--s-3);align-items:center;padding:var(--s-3) 0;border-bottom:1px solid var(--border)}.picture-box{aspect-ratio:2.3/1;border:2px solid var(--border-bright);display:grid;place-content:center;text-align:center;padding:var(--s-2)}.picture-box strong{font-size:var(--t-h3);font-variant-numeric:tabular-nums}.picture-box small{font-size:var(--t-small);color:var(--text-dim)}.picture-box.latest{border-color:var(--accent);background:var(--accent-dim)}.bar-row{display:grid;grid-template-columns:145px 1fr 120px;gap:var(--s-3);align-items:center;font-size:var(--t-small);margin:var(--s-3) 0}.bar-track{height:22px;border-left:1px solid var(--border-bright);border-bottom:1px solid var(--border-bright);background:var(--bg)}.bar-fill{height:20px;background:var(--accent)}.room-one{display:inline-block;width:36px;height:22px;border:2px solid var(--accent);background:var(--accent-dim)}
+details{padding:var(--s-3) 0;border-bottom:1px solid var(--border)}summary{cursor:pointer;font-weight:700}details p{margin:var(--s-3) 0 0;font-size:var(--t-small)}.answer{padding:var(--s-4);background:var(--surface);border:1px solid var(--border);font-size:var(--t-body);line-height:1.9}.sources a{overflow-wrap:anywhere}.sources ul{font-size:var(--t-small);padding-left:1.2em}.note-list{padding-left:1.3em;max-width:68ch}.note-list li{margin:var(--s-2) 0}.ve-svg .inside-label{fill:var(--accent);font-weight:700}.ve-svg text{font-family:"Noto Sans CJK SC","Microsoft YaHei",sans-serif}.print-button{margin-top:var(--s-4)}
+@media(prefers-color-scheme:dark){:root{--accent:#88d6be;--accent-dim:#1c3430}button.primary{color:#11251e}}
+@media(max-width:1000px){.layout{display:block;padding:var(--s-3)}.side{position:sticky;top:0;background:var(--bg);z-index:10;padding:var(--s-2) 0;margin-bottom:var(--s-4)}.side ul{display:flex;overflow-x:auto;gap:var(--s-2);white-space:nowrap}.side .brand,.side .fine,.side .print-button{display:none}.side a{padding:var(--s-1) var(--s-2)}section{scroll-margin-top:70px}h1{font-size:var(--t-h2)}.columns,.case-list,.msg-grid,.control-grid{grid-template-columns:1fr}.sequence{grid-template-columns:1fr 1fr}.film-row{grid-template-columns:1fr 1fr}.film-row>strong{grid-column:1/-1}.bar-row{grid-template-columns:1fr 1fr}.bar-row>span:first-child{grid-column:1/-1}.resource{padding:var(--s-2)}.frame{padding:var(--s-2)}}
+@media print{.layout{display:block;padding:0}.side,.buttons,.control-grid,.print-button,.ve-player button,.ve-player input{display:none}section{break-before:page;margin-top:var(--s-5)}figure,.resource-grid,.case-list{break-inside:avoid}.frame{overflow:visible}.ve-svg{min-width:0!important;width:100%!important}details{display:block}}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="side" aria-label="阅读顺序">
+<p class="brand">LongLive Rooms<br>课程设计讲解</p>
+<ul>
+<li><a href="#overview">先看整体</a></li>
+<li><a href="#boundary">我们负责什么</a></li>
+<li><a href="#sharing">连接与生成分开算</a></li>
+<li><a href="#admission">同时开播怎么分配</a></li>
+<li><a href="#prompts">多人发消息怎么办</a></li>
+<li><a href="#slow">慢观众怎么处理</a></li>
+<li><a href="#timing">不同等待分开计时</a></li>
+<li><a href="#recovery">停播后怎样再使用</a></li>
+<li><a href="#deployment">哪些故障会互相影响</a></li>
+<li><a href="#evidence">实测与展示提纲</a></li>
+</ul>
+<p class="fine">先读图下结论，再操作按钮。展开的问题用于准备课堂追问。</p>
+<button class="print-button" type="button" id="print-page">打印或存成文档</button>
+</nav>
+<main>
+<header id="overview">
+<p class="eyebrow">从网络连接到资源管理</p>
+<h1>多人一起看，<br>每间房只生成一份画面。</h1>
+<p class="lead">我们的设计重点是：让许多人安全地共享生成结果，同时把资源的分配、使用和回收安排清楚。</p>
+<figure>
+<div class="frame"><svg class="ve-svg" viewBox="0 0 1000 340" aria-label="观看者把提示词交给本项目，本项目安排外部生成程序，再把同一份画面分发给观看者">
+<rect class="ve-bnd" x="290" y="20" width="410" height="300" rx="5"/><text class="ve-bnd-t" x="310" y="45">任务内 · 我们实现并验证</text>
+<path class="ve-e" d="M230 125H335"/><text class="ve-el" x="282" y="109">提交想法</text>
+<path class="ve-e" d="M655 125H765"/><text class="ve-el" x="710" y="109">送去生成</text>
+<path class="ve-e is-hot" d="M765 225H655"/><text class="ve-el" x="710" y="209">返回画面</text>
+<path class="ve-e is-hot" d="M335 225H230"/><text class="ve-el" x="282" y="209">分给大家</text>
+<g class="ve-n"><rect class="sh" x="20" y="80" width="210" height="190" rx="5"/><text x="125" y="123">观看者的网页</text><text class="sub" x="125" y="163">选择房间、发提示词</text><text class="sub" x="125" y="196">多人共享同一条直播</text><text class="sub" x="125" y="235">每个人有自己的连接</text></g>
+<g class="ve-n is-key"><rect class="sh" x="335" y="80" width="320" height="190" rx="5"/><text x="495" y="120">统一安排与转发</text><text class="sub" x="495" y="162">记住房间、观众和可用资源</text><text class="sub" x="495" y="196">决定把哪句话送给哪间房</text><text class="sub" x="495" y="232">接回画面，处理断线和回收</text></g>
+<g class="ve-n"><rect class="sh" x="765" y="80" width="215" height="190" rx="5"/><text x="872" y="122">现成的生成程序</text><text class="sub" x="872" y="163">按文字计算下一段画面</text><text class="sub" x="872" y="196">使用服务器上的显卡</text><text class="sub" x="872" y="235">任务外 · 模型算法</text></g>
+</svg></div>
+<figcaption><span class="fig-n">图 1</span><strong>我们把一个现成模型接成可共享、可控制、可恢复的直播系统。</strong>网页和中间的安排逻辑属于本项目；模型如何算出画面由外部实现提供。</figcaption>
+</figure>
+<div class="read-note">本页依据当前代码编写。按钮只演示规则，不连接直播服务器，也不保存弹幕。示例里的房间和消息都是为讲解编造的。</div>
+</header>
+<section id="boundary">
+<p class="eyebrow">先把项目边界说清楚</p>
+<h2>模型画什么，与系统怎样让大家一起看，是两件事。</h2>
+<figure>
+<div class="columns">
+<div class="boundary"><span class="chip ok">任务内</span><h3>由我们作决定</h3><ul><li>一个房间占用哪一份生成资源。</li><li>一个观众看哪间房，收到哪些消息。</li><li>多人发话时，下一句采用哪一条。</li><li>有人网慢、退出或重试时怎样处理。</li><li>停止或失败后，何时才能再次分配资源。</li><li>怎样打包运行，怎样测出真实效果。</li></ul></div>
+<div class="boundary"><span class="chip">任务外</span><h3>使用别人提供的能力</h3><ul><li>从文字生成画面的算法和训练。</li><li>显卡执行计算的底层能力。</li><li>浏览器实际显示画面和传送数据的基础能力。</li><li>把程序放进独立运行环境的基础工具。</li></ul><p class="fine">外部工具负责基础能力；怎样连接、配置和管理它们，仍是我们的工作。我们没有实现账号体系、公开网站权限或跨机器自动接管。</p></div>
+</div>
+<figcaption><span class="fig-n">图 2</span><strong>外部负责“能够生成”，我们负责“多人使用时能正确运行”。</strong>现成模型的名字是 LongLive，本项目通过 Scope 使用它；课堂讲解不需要先进入模型内部。</figcaption>
+</figure>
+<div class="case-list"><article><h3>看画面</h3><p>网页选择房间 → 登记这个观众 → 送出该房间的最新画面。已经开播的房间无需重新加载模型。</p></article><article><h3>发想法</h3><p>先确认消息属于哪间房 → 通知这间房的人 → 更新待送内容 → 由该房间统一投递。</p></article><article><h3>开一间新房</h3><p>先拿到可用资源 → 准备生成程序 → 接上画面 → 真正收到第一张图后才算开播成功。</p></article></div>
+</section>
+<section id="sharing">
+<p class="eyebrow">网络与资源的第一条区别</p>
+<h2>增加观众会增加连接，但不会多生成一份视频。</h2>
+<figure id="capacity-demo">
+<div class="frame">
+<p class="small-label">教学起点：只开了甲房，另一份资源暂时空闲。实际部署默认启动两间。</p>
+<div class="resource-grid"><div class="resource"><span class="small-label">生成位置一</span><div class="state">甲房正在生成</div><div class="people" id="people-a" aria-label="甲房的观众数量"></div><p class="fine" id="view-count">3 位观众共同观看</p></div><div class="resource free" id="resource-b"><span class="small-label">生成位置二</span><div class="state" id="room-b-state">空闲，可分配</div><p class="fine" id="room-b-detail">目前没有房间使用它。</p></div></div>
+<div class="counter-row"><span>正在生成 <strong id="generating-count">1</strong> 份画面</span><span>可用于新房间 <strong id="free-count">1</strong> 份</span></div>
+<div class="buttons"><button type="button" id="add-viewer">甲房增加一位观众</button><button type="button" class="primary" id="add-room">申请一个新房间</button><button type="button" id="reset-capacity">重置演示</button></div>
+<p class="sim-status" id="capacity-result" aria-live="polite">试着先加观众，再连续申请两次新房间。</p>
+</div><figcaption><span class="fig-n">图 3</span><strong>生成容量按正在生成的房间数计算。</strong>资源用完时拒绝新开播；已有房间仍可在观看人数限制内继续加入。默认每间最多接纳 16 位观众，这也是配置项。</figcaption>
+</figure>
+<h3>省下显卡计算，不代表增加观众没有成本。</h3>
+<figure id="bandwidth-demo"><div class="frame">
+<div class="control-grid"><label>同一房间的观众：<output id="band-view-label">8 人</output><input type="range" id="band-view" min="1" max="16" value="8" aria-label="调整观众人数"></label><label>每张画面大小：<output id="band-size-label">20 千字节</output><input type="range" id="band-size" min="10" max="50" step="5" value="20" aria-label="调整每张画面的大小"></label></div>
+<div class="bar-row"><span>显卡生成任务</span><div><span class="room-one" aria-hidden="true"></span></div><output>始终 1 份</output></div>
+<div class="bar-row"><span>每秒发出的数据</span><div class="bar-track"><div class="bar-fill" id="band-fill" style="width:20%"></div></div><output id="band-total">3.20 兆字节</output></div>
+<p class="fine" id="band-formula">8 人 × 每秒 20 张 × 每张 20 千字节 = 每秒 3.20 兆字节。</p>
+</div><figcaption><span class="fig-n">图 4</span><strong>人数翻倍，发往观众的数据也大致翻倍。</strong>这里假设每秒 20 张图，不含额外传送开销，是算量示意，不是实测带宽。更多人观看时，出口网络和图片转发处理会成为新的限制。</figcaption></figure>
+</section>
+<section id="admission">
+<p class="eyebrow">两个人同时点“开播”</p>
+<h2>先把资源记为已预留，再开始慢操作。</h2>
+<figure class="ve-steps">
+<div class="frame"><svg class="ve-svg" viewBox="0 0 900 390" aria-label="同时开播的两个请求先后进入同一登记入口，先到者预留唯一空闲资源，后到者看到已占用">
+<rect class="ve-bnd" x="260" y="25" width="365" height="340" rx="5"/><text class="ve-bnd-t" x="280" y="49">同一时刻只允许一次修改</text>
+<path class="ve-e" data-s="0 1 2" d="M205 105H300"/><text class="ve-el" x="252" y="88">甲先登记</text>
+<path class="ve-e" data-s="0 1 4" d="M205 280H250V200H300"/><text class="ve-el r" x="211" y="245">乙稍后登记</text>
+<path class="ve-e" data-s="0 3" d="M585 105H690"/><text class="ve-el" x="637" y="88">改为预留</text>
+<path class="ve-e" data-s="0 5" d="M785 150V245"/><text class="ve-el r" x="795" y="202">再去准备</text>
+<g class="ve-n" data-s="0 1"><rect class="sh" x="25" y="65" width="180" height="80" rx="5"/><text x="115" y="105">甲申请开播</text></g>
+<g class="ve-n" data-s="0 1 4"><rect class="sh" x="25" y="240" width="180" height="80" rx="5"/><text x="115" y="280">乙申请开播</text></g>
+<g class="ve-n is-key" data-s="0 2 3 4"><rect class="sh" x="300" y="70" width="285" height="185" rx="5"/><text x="442" y="112">查资源 + 立即占住</text><text class="sub" x="442" y="155">两件事连续完成</text><text class="sub" x="442" y="190">不会让别人插进中间</text><text class="sub" x="442" y="225">决定完成就让下一人进来</text></g>
+<g class="ve-n" data-s="0 3"><rect class="sh" x="690" y="65" width="190" height="85" rx="5"/><text x="785" y="100">唯一空闲位置</text><text class="sub" x="785" y="128">已为甲保留</text></g>
+<g class="ve-n" data-s="0 5"><rect class="sh" x="690" y="245" width="190" height="100" rx="5"/><text x="785" y="280">加载与接收画面</text><text class="sub" x="785" y="315">在登记完成后等待</text></g>
+<text class="ve-axis-t" x="442" y="305">乙进入时已无空位 → 提示资源已满</text>
+</svg></div>
+<div class="ve-player"><ol class="ve-cap"><li data-n="1/5">甲、乙几乎同时提出开播；此时只剩一个可用位置。</li><li data-n="2/5">甲先进入统一登记处，检查有没有空位。</li><li data-n="3/5">甲立刻把它改成“已为甲预留”，然后结束这次登记。</li><li data-n="4/5">乙接着检查，已经看不到空位，因此不会重复占用。</li><li data-n="5/5">甲去等待模型加载和画面；其他房间仍能处理连接和消息。</li></ol><button type="button" data-go="-1">上一步</button><button type="button" data-play>播放过程</button><input type="range" aria-label="逐步查看分配过程"><button type="button" data-go="1">下一步</button></div>
+<figcaption><span class="fig-n">图 5</span><strong>短暂的登记按顺序处理，耗时的工作分别等待。</strong>既避免两人拿到同一位置，也不让全部观众陪着一次模型加载等待。示意中的先后顺序由服务实际收到请求的顺序决定。</figcaption>
+</figure>
+<details><summary>为什么不能等模型加载成功后才把位置记为占用？</summary><p>加载期间，第二个申请仍会看到“空闲”，也会使用同一份资源。因此，准备中的房间已经占用容量，尽管它还没有产生第一张画面。</p></details>
+<details><summary>重复点开播、重复发送同一个申请，会不会多占一份？</summary><p>已经准备中或正在直播的房间，重复开播直接返回当前状态。创建房间的请求还带有自己的编号，同一编号、同一内容重试时返回原来的房间。编号相同但内容不同会被拒绝。这个记忆有数量上限，也不会跨服务重启永久保留。</p></details>
+<details><summary>是否所有事情都必须一个接一个做？</summary><p>只有共同记录的修改需要短暂排顺序。加载生成程序、接收不同房间的画面、向不同观众发送内容可以分别推进。较慢的图片转换也另行执行。这样，“同时服务”不等于“同时修改同一张资源表”。</p></details>
+</section>
+<section id="prompts">
+<p class="eyebrow">许多人同时改变同一间房</p>
+<h2>每句话都能看见，等待投递的位置只留最新一句。</h2>
+<figure id="prompt-demo"><div class="frame">
+<div class="msg-grid"><div><h3>甲房的消息显示区</h3><ul class="message-list" id="prompt-list"><li class="muted">还没有收到示例消息。</li></ul></div><div><span class="small-label">唯一的待投递位置</span><div class="slot" id="pending-slot"><strong id="pending-text">空</strong></div><span class="small-label">最近一次实际送出的内容</span><p id="sent-text">尚未投递</p><div class="other-room"><b>乙房仍使用：</b>云上花园<br>甲房的按钮只改变甲房。</div></div></div>
+<div class="buttons"><button type="button" id="receive-prompt">收到下一条示例消息</button><button type="button" class="primary" id="send-prompt-demo">投递当前内容</button><button type="button" id="reset-prompts">从头演示</button></div>
+<p class="sim-status" id="prompt-result" aria-live="polite">先连续收两条，再投递。继续点击还能看到重复补发的处理。</p>
+</div><figcaption><span class="fig-n">图 6</span><strong>显示给观众，与送给模型，是两个动作。</strong>实际每次收到待投递内容后会按设置等待一个短间隔，默认 0.5 秒；本图用手动按钮放慢这个过程。这里只存放本页的虚构示例，刷新即清空。</figcaption></figure>
+<div class="case-list"><article><h3>先后收到两条</h3><p>前一条继续留在消息区，但标记为“被替代”。下一次只送尚未投递的最新内容。</p></article><article><h3>同一条被重复补发</h3><p>每条消息带自己的编号。同一编号和内容只返回原结果，不新增弹幕，也不重新排进待投递位置。</p></article><article><h3>前一条已经送出</h3><p>我们不能收回它。新内容只能在之后送出；因此页面不会承诺每条消息都对应一次完整换景。</p></article></div>
+<p>每间房各自记住消息、待投递内容和当前生成连接，并且只由该房间的一个发送者送指令。这样，两个观众同时操作时，也不会各自绕过房间管理直接抢着控制模型。</p>
+<details><summary>如果等太久，或者发送失败，会发生什么？</summary><p>待投递内容有有效期，默认 20 秒。取出时如果已经过期，就标记为过期；发送失败会标记为失败。投递成功只代表内容已经交给通道，不代表模型已按它生成出可见画面。</p></details>
+</section>
+<section id="slow">
+<p class="eyebrow">多人连接各自快慢不同</p>
+<h2>给慢观众留最新画面，不让旧画面越攒越多。</h2>
+<figure id="frame-demo"><div class="frame">
+<p class="small-label">同一间房产生的新画面，会分别送到每位观众。下面用编号代替图片。</p>
+<div class="film-row"><strong>生成端刚产生</strong><div class="picture-box latest"><strong id="frame-source">第 1 张</strong><small>一份共同来源</small></div><p class="fine">新画面来到时，更新每个人待取走的画面。</p></div>
+<div class="film-row"><strong>快观众</strong><div class="picture-box"><strong id="frame-fast">第 1 张</strong><small>及时显示</small></div><p class="fine">不会等待慢观众追上来。</p></div>
+<div class="film-row"><strong>慢观众</strong><div class="picture-box"><strong id="frame-slow">第 1 张</strong><small>目前看见的</small></div><div class="picture-box latest"><strong id="frame-pending">空</strong><small>最多一张待发送画面</small></div></div>
+<div class="buttons"><button type="button" id="new-frame">新画面到达</button><button type="button" class="primary" id="slow-read">慢观众取走最新画面</button><button type="button" id="reset-frames">重置演示</button></div>
+<p class="sim-status" id="frame-result" aria-live="polite">连续产生几张，再让慢观众取一次，观察编号是否跳过。</p>
+</div><figcaption><span class="fig-n">图 7</span><strong>允许少看几张，避免一直追赶过时内容。</strong>我们管理的是等待发送的最新画面；已经在网络中传送的内容仍需时间，不保证任何网络下都零延迟。浏览器处理图片跟不上时，也采用只保留最新待显示画面的规则。</figcaption></figure>
+<div class="columns"><div><h3>视频可以跳过旧图</h3><p>实时观看更在意“现在是什么”，所以不把所有过时画面堆起来。每位观众有独立的发送工作，慢连接不会成为所有人的共同等待点。</p></div><div><h3>消息需要维持顺序</h3><p>消息与状态变化按顺序发送，并设置数量上限。一个观众长期收不过来时，会关闭该连接，让它重新加入并获取当前状态与仍保留的消息，而不是无限积压。</p></div></div>
+<details><summary>省下的是哪些成本，又付出了什么代价？</summary><p>同一房间收到的画面只转换一次，再给多名观众使用，减少重复处理。我们把它转成容易交给网页的独立图片，因此可以和消息一起走一个入口。代价是数据量可能比连续压缩视频更大，观看人数上升后仍需要更多网络和转发处理能力。</p></details>
+</section>
+<section id="timing">
+<p class="eyebrow">分清“人还在”与“视频还在”</p>
+<h2>浏览器一直在线，也不能证明生成程序没有卡住。</h2>
+<figure><div class="frame">
+<div class="sequence"><div class="step"><span class="small-label">针对一个观众</span><b>是否仍有回应</b>超时只移除这个人的连接；房间继续生成。</div><div class="step"><span class="small-label">针对开播过程</span><b>是否连得上</b>模型准备好后，连接建立有自己的等待期限。</div><div class="step"><span class="small-label">针对真正的画面</span><b>是否收到第一张</b>连接已建立，也必须等到第一张画面才能确认开播。</div><div class="step"><span class="small-label">针对已开播房间</span><b>是否停止更新</b>太久没有新画面，就结束这一间并清理资源。</div></div>
+</div><figcaption><span class="fig-n">图 8</span><strong>每种等待只回答自己的问题。</strong>浏览器定期回应，不能延长模型加载或媒体连接的期限；模型准备和故障恢复也有各自的时间限制。</figcaption></figure>
+<details><summary>为什么不统一设一个等待时间？</summary><p>加载模型通常比确认一个浏览器还在耗时更长。如果都设得很短，会把正常加载误判成失败；如果都设得很长，离开的观众和卡死的连接又会迟迟不清理。所以各个阶段分别计时，具体值通过配置调整。</p></details>
+<details><summary>已经停止的旧连接，迟到的画面会串进新一轮直播吗？</summary><p>每次接收画面或报告异常前，服务都会检查它是否仍属于这间房当前使用的生成来源。旧的一轮结束后，迟到的结果不再被采用。网页切换房间时也会区分新旧连接，避免把上一间的迟到画面放到下一间。</p></details>
+</section>
+<section id="recovery">
+<p class="eyebrow">资源管理的关键不是开始，而是结束</p>
+<h2>“已经收到停止请求”与“现在可以再用”必须分开。</h2>
+<figure id="recovery-demo"><div class="frame">
+<div class="state-track" id="recovery-track"><span class="active">正在生成</span><span>禁止再分配</span><span>关闭旧连接</span><span>替换生成程序</span><span>重新准备模型</span><span>验证后可用</span></div>
+<div class="columns" style="margin-top:var(--s-4)"><div><h3 id="recovery-title">当前正在生成</h3><p id="recovery-detail">这一份资源属于甲房。点击下一步，查看停播后发生什么。</p></div><div class="boundary"><span class="small-label">其他房间能否拿走这份资源？</span><p id="recovery-answer"><b>不能。</b>它还属于正在直播的甲房。</p></div></div>
+<div class="buttons"><button type="button" class="primary" id="next-recovery">下一步</button><button type="button" id="fail-recovery">让当前清理步骤失败</button><button type="button" id="reset-recovery">从头演示</button></div>
+<p class="sim-status" id="recovery-result" aria-live="polite">正常过程最终才归还；任一关键步骤失败就暂时移出可用资源。</p>
+</div><figcaption><span class="fig-n">图 9</span><strong>清理中仍然占用资源，验证完成后才重新开放。</strong>这里展示我们自行启动和管理的生成程序。重新准备模型会花时间，因此停止按钮的请求可以先返回“正在处理”。</figcaption></figure>
+<div class="columns"><div><h3>自己管理的程序</h3><p>关闭这间房的旧连接，结束自己创建的生成程序，再启动新的程序。确认已替换且模型重新可用，才把资源交还。整个过程不会按显卡编号去终止其他人的任务。</p></div><div><h3>外部提供的程序</h3><p>不能假定我们有权重启它，也不能凭“还能回应”就认为历史已经清空。当前实现没有可靠的外部清理办法，所以结束使用后会暂时停用这一份，等待外部管理者处理。</p></div></div>
+<details><summary>异常结束后，房间会自动恢复直播吗？</summary><p>系统会尝试自动清理和恢复那份生成资源；故障房间本身保留失败状态，不自动重新开播。恢复成功后，可以再次点击开播。课堂展示时要分清“资源已经恢复”和“这间房已重新直播”。</p></details>
+<details><summary>为什么确认程序已换新，还要等模型准备好？</summary><p>新程序可能已经能回答简单请求，但还不能生成。只有确认模型可以工作，才能允许再次分配。否则，下一位使用者会接到一个表面正常、实际不可用的资源。</p></details>
+</section>
+<section id="deployment">
+<p class="eyebrow">运行环境与故障边界</p>
+<h2>只有一个对外入口，内部把各间生成程序分开。</h2>
+<figure><div class="frame"><svg class="ve-svg" viewBox="0 0 1020 380" aria-label="自己的电脑通过一个转发入口访问房间服务，服务器内部的两间生成程序各自使用一张显卡">
+<rect class="ve-bnd" x="310" y="20" width="690" height="340" rx="5"/><text class="ve-bnd-t" x="330" y="45">服务器内部 · 生成与管理端口不直接交给观众</text>
+<path class="ve-e is-hot" d="M210 185H350"/><text class="ve-el" x="280" y="166">只转发这一个入口</text>
+<path class="ve-e" d="M570 185H620V110H680"/><text class="ve-el" x="625" y="89">只交给甲房</text>
+<path class="ve-e" d="M620 185V285H680"/><text class="ve-el" x="625" y="263">只交给乙房</text>
+<g class="ve-n"><rect class="sh" x="20" y="130" width="190" height="110" rx="5"/><text x="115" y="168">自己的电脑</text><text class="sub" x="115" y="205">网页、弹幕、画面</text></g>
+<g class="ve-n is-key"><rect class="sh" x="350" y="130" width="220" height="110" rx="5"/><text x="460" y="170">房间服务</text><text class="sub" x="460" y="205">统一登记与转发</text></g>
+<g class="ve-n"><rect class="sh" x="680" y="65" width="280" height="90" rx="5"/><text x="820" y="99">甲房生成程序</text><text class="sub" x="820" y="132">一份独立运行环境 + 一张显卡</text></g>
+<g class="ve-n"><rect class="sh" x="680" y="240" width="280" height="90" rx="5"/><text x="820" y="274">乙房生成程序</text><text class="sub" x="820" y="307">另一份运行环境 + 另一张显卡</text></g>
+</svg></div><figcaption><span class="fig-n">图 10</span><strong>把访问入口收拢，把生成工作的影响范围分开。</strong>当前用于自己的电脑访问；默认没有公开网站的账号和权限控制。这种部署方便课程演示，不等于已经具备面向所有人的服务能力。</figcaption></figure>
+<figure><div class="ve-table"><table><thead><tr><th>哪里出了问题</th><th>当前会影响谁</th><th>系统怎样处理</th></tr></thead><tbody><tr><td>一个观众网慢或退出</td><td>主要是这个观众</td><td>跳过过时画面，或移除该连接；房间继续。</td></tr><tr><td>甲房的生成程序退出</td><td>甲房停止；乙房可以继续</td><td>清理甲房并恢复它的资源；重新开播需再次发起。</td></tr><tr><td>统一房间服务退出</td><td>所有观众连接和房间管理</td><td>重启后重新建立房间，内存中的历史不会恢复。</td></tr><tr><td>自己的访问通路断开</td><td>通过这条通路访问的人</td><td>网页暂时收不到内容；观众离开不会主动停掉服务器生成。</td></tr><tr><td>整台服务器故障</td><td>这一台上的全部房间</td><td>当前没有另一台机器自动接替。</td></tr></tbody></table></div><figcaption><span class="fig-n">图 11</span><strong>房间之间有隔离边界，但仍共享总入口、网络和服务器。</strong>已验证的单路故障不拖停另一路，不等于任何故障都互不影响。</figcaption></figure>
+<details><summary>为什么总登记者只运行一份？以后怎样扩大规模？</summary><p>目前可用资源、房间和消息都保存在这一份服务的内存里。如果直接复制成两份，它们会各自认为同一份资源还空闲。当前采用一个总登记者；跨多台机器的共同记录、备用服务和自动接管，都属于以后需要另外实现的工作。</p></details>
+<details><summary>打包运行解决了什么，没有解决什么？</summary><p>打包固定依赖版本、启动方式和运行边界，减少换环境后“同样代码却跑不起来”的问题。权重和运行数据另放在项目目录。已验证的方案仍依赖固定的绝对路径，移动目录要重新建立环境；它也不能消除显卡、网络或整台机器故障。</p></details>
+</section>
+<section id="evidence">
+<p class="eyebrow">展示时讲清“做了”与“测过了”</p>
+<h2>把设计理由与实际验证，一一对应起来。</h2>
+<figure><div class="frame"><div class="columns"><div><h3>双路同时接收的画面（每秒张数）</h3><ve-bars unit="" max="25" label="两间房在服务器本机接收的实际画面分别为每秒21.40张和21.32张"><ve-bar value="21.4" hot>甲房</ve-bar><ve-bar value="21.32">乙房</ve-bar></ve-bars></div><div><h3>正常停播与重新开播</h3><ve-bars unit="秒" max="80" label="清理并重新就绪耗时64.3秒，再开播到收到画面耗时66.6秒"><ve-bar value="64.3">清理就绪</ve-bar><ve-bar value="66.6" hot>重新开播</ve-bar></ve-bars></div></div></div><figcaption><span class="fig-n">图 12</span><strong>稳定运行的流畅程度，与开始、结束所需的时间，是不同指标。</strong>这是两张 A800 显卡、384×224 画面下的实测；接收速度在服务器本机测量，不包含自己电脑的网络变化。完整条件见验收记录。</figcaption></figure>
+<div class="case-list"><article><span class="chip ok">已经验证</span><h3>多人共享与房间隔离</h3><p>两页观看同一间房，收到画面与消息；其中一页换房，另一页继续。改变甲房内容不会改写乙房的提示词。</p></article><article><span class="chip ok">已经验证</span><h3>单路退出后的回收</h3><p>让我们管理的一个生成程序意外退出，系统检测并恢复该资源，另一间持续生成；随后重新开播成功。</p></article><article><span class="chip warn">尚未验证或未实现</span><h3>更大的运行规模</h3><p>更多真实生成房间、更高画质和长时间连续运行尚未验证。账号权限、历史持久保存和跨机器接管尚未实现。</p></article></div>
+<h3>课堂上可以这样顺着讲</h3>
+<div class="answer">我们先把“生成一间房”和“观看一间房”分开。增加观众只增加连接，不重复启动模型。新房间先预留资源，防止同时申请重复占用；加载模型时不占着登记入口。多人发来的想法都展示，但等待投递的内容只留最新一句。每位观众独立接收最新画面，慢连接不会把所有人一起拖住。最后，停止请求先进入清理，只有生成程序已换新、模型已准备好，资源才会重新开放。</div>
+<details><summary>老师问：“你们的工作量体现在哪里？”</summary><p>可以沿着几个具体问题回答：多人共看时如何只生成一份；同时开播如何避免重复分配；重复消息如何不重复出现；慢观众如何不积压；退出观众为何不结束房间；失败资源为何不能立即复用。每个问题都有代码中的处理规则，也有相应验证。模型本身的训练和生成算法不计作我们的实现成果。</p></details>
+<details><summary>老师问：“为什么不用更复杂、更大规模的方案？”</summary><p>这次目标是让自己的电脑稳定演示真实双路互动。一个统一登记者、独立的生成程序、只保留最新画面，已经能覆盖当前场景。我们清楚它仍有共同入口和单台服务器的限制，把进一步扩大规模列为后续工作，而不把尚未实现的能力写成已有功能。</p></details>
+</section>
+<section class="sources" aria-label="代码与证据来源">
+<p class="eyebrow">代码对照与阅读依据</p>
+<h2>这些解释来自当前实现。</h2>
+<ul><li><a href="longlive/manager.py">房间与资源的登记、提示词选择、清理规则</a></li><li><a href="longlive/app.py">每位观众的连接、发送、定期回应与离开处理</a></li><li><a href="longlive/media.py">接收生成画面、转成网页图片与控制外部程序</a></li><li><a href="deploy/supervisor.py">只管理自己创建的生成程序</a></li><li><a href="web/src/main.ts">网页切换房间、展示消息、保留最新画面</a></li><li><a href="longlive/config.py">人数、消息历史、投递间隔与等待期限</a></li><li><a href="results/validation.md">真实单路、双路与异常恢复的验收记录</a></li><li><a href="results/release-readiness.md">部署文件和构建检查</a> · <a href="README.md">返回项目说明</a></li></ul>
+<p class="fine">说明基于 2026 年 11 月 24 日的实现与验收。页面中的交互只解释规则，不代表正在监控服务器；示例操作不会写入浏览器存储或保存消息。单独复制本文件仍可阅读和演示，代码链接需要放在项目目录中打开。</p>
+</section>
+</main>
+</div>
+<script>
+const byId=id=>document.getElementById(id);
+byId('print-page').addEventListener('click',()=>window.print());
+let viewers=3,rooms=1;
+function capacityRender(){byId('people-a').replaceChildren(...Array.from({length:viewers},()=>{const e=document.createElement('span');e.className='person';e.setAttribute('aria-hidden','true');return e}));byId('people-a').setAttribute('aria-label',`甲房有${viewers}位观众`);byId('view-count').textContent=`${viewers} 位观众共同观看`;byId('resource-b').classList.toggle('free',rooms===1);byId('room-b-state').textContent=rooms===1?'空闲，可分配':'乙房正在生成';byId('room-b-detail').textContent=rooms===1?'目前没有房间使用它。':'它只为乙房生成，和甲房分别管理。';byId('generating-count').textContent=rooms;byId('free-count').textContent=2-rooms}
+byId('add-viewer').addEventListener('click',()=>{if(viewers>=16){byId('capacity-result').textContent='已经达到本例的观看人数上限。生成容量与观看人数限制是两条不同的规则。';return}viewers++;capacityRender();byId('capacity-result').textContent=`甲房现在有 ${viewers} 位观众，但仍只生成一份画面。两份生成位置的占用没有变化。`});
+byId('add-room').addEventListener('click',()=>{if(rooms===2){byId('capacity-result').textContent='拒绝新开播：两份资源都已占用。已有房间仍可在观看人数限制内加入。';return}rooms=2;capacityRender();byId('capacity-result').textContent='已把第二份资源交给乙房。为了突出容量，本图省略了加载到第一张画面的等待。'});
+byId('reset-capacity').addEventListener('click',()=>{viewers=3;rooms=1;capacityRender();byId('capacity-result').textContent='已回到一间房、三位观众。请观察增加观众和增加房间的区别。'});capacityRender();
+function bandwidth(){const n=Number(byId('band-view').value),size=Number(byId('band-size').value),total=n*20*size/1000;byId('band-view-label').textContent=`${n} 人`;byId('band-size-label').textContent=`${size} 千字节`;byId('band-total').textContent=`${total.toFixed(2)} 兆字节`;byId('band-fill').style.width=`${total/16*100}%`;byId('band-formula').textContent=`${n} 人 × 每秒 20 张 × 每张 ${size} 千字节 = 每秒 ${total.toFixed(2)} 兆字节。`}
+byId('band-view').addEventListener('input',bandwidth);byId('band-size').addEventListener('input',bandwidth);bandwidth();
+const promptExamples=[{id:'示例甲',text:'城市夜景'},{id:'示例乙',text:'雪地森林'},{id:'示例乙',text:'雪地森林'},{id:'示例丙',text:'海底鱼群'}];let received=[],pending=null,sent='',exampleIndex=0;
+function promptRender(){const list=byId('prompt-list');list.replaceChildren();if(!received.length){const li=document.createElement('li');li.className='muted';li.textContent='还没有收到示例消息。';list.append(li)}received.forEach(m=>{const li=document.createElement('li'),a=document.createElement('span'),b=document.createElement('span');a.textContent=m.text;b.textContent=m.state;if(m.state==='被替代')li.className='muted';li.append(a,b);list.append(li)});byId('pending-text').textContent=pending?pending.text:'空';byId('pending-slot').classList.toggle('filled',!!pending);byId('sent-text').textContent=sent||'尚未投递';byId('receive-prompt').disabled=exampleIndex>=promptExamples.length}
+byId('receive-prompt').addEventListener('click',()=>{const example=promptExamples[exampleIndex++];if(!example)return;const old=received.find(x=>x.id===example.id);if(old){byId('prompt-result').textContent='这是浏览器补发的同一编号。返回原消息的结果，不增加弹幕，也不重新投递。';promptRender();return}if(pending)pending.state='被替代';pending={...example,state:'等待投递'};received.push(pending);promptRender();byId('prompt-result').textContent=`已展示“${example.text}”，待投递位置现在只保留它；乙房没有改变。`});
+byId('send-prompt-demo').addEventListener('click',()=>{if(!pending){byId('prompt-result').textContent='目前没有新的待投递内容，不重复发送上一条。';return}pending.state='已投递';sent=pending.text;pending=null;promptRender();byId('prompt-result').textContent='已把当前内容交给生成程序。我们还不能据此断言画面已经发生变化。'});
+byId('reset-prompts').addEventListener('click',()=>{received=[];pending=null;sent='';exampleIndex=0;promptRender();byId('prompt-result').textContent='示例已清空。先连续收两条，再投递。'});promptRender();
+let frame=1,slow=1,pendingFrame=null;
+function frameRender(){byId('frame-source').textContent=`第 ${frame} 张`;byId('frame-fast').textContent=`第 ${frame} 张`;byId('frame-slow').textContent=`第 ${slow} 张`;byId('frame-pending').textContent=pendingFrame?`第 ${pendingFrame} 张`:'空'}
+byId('new-frame').addEventListener('click',()=>{frame++;pendingFrame=frame;frameRender();byId('frame-result').textContent=`新画面是第 ${frame} 张。快观众已看到它；慢观众的待取位置被最新一张替换。`});
+byId('slow-read').addEventListener('click',()=>{if(!pendingFrame){byId('frame-result').textContent='暂时没有新画面可取。';return}const skipped=pendingFrame-slow-1;slow=pendingFrame;pendingFrame=null;frameRender();byId('frame-result').textContent=skipped>0?`慢观众直接取到第 ${slow} 张，跳过中间 ${skipped} 张旧图。其他观众没有等待。`:`慢观众取到第 ${slow} 张。这次没有跳过中间画面。`});
+byId('reset-frames').addEventListener('click',()=>{frame=1;slow=1;pendingFrame=null;frameRender();byId('frame-result').textContent='已回到第一张画面。连续产生几张，再让慢观众取一次。'});
+const recoverySteps=[['当前正在生成','这一份资源属于甲房。点击下一步，查看停播后发生什么。','不能。它还属于正在直播的甲房。'],['收到停止请求，先禁止再分配','立即记成“正在清理”。可以先回答网页：请求已收到，后续仍在处理中。','不能。停止请求已收到，不代表清理已完成。'],['关闭这间房的旧连接','停止该房间的画面接收和提示词投递，结束还没有完成的启动工作。','不能。旧的一轮还在被清理。'],['把自己管理的生成程序换新','结束自己创建的旧程序，启动新的程序，并确认这确实是新的一次运行。','不能。刚启动的新程序还未必能生成画面。'],['重新准备模型并确认可用','检查模型加载结果。只会回应简单请求，不足以通过这一关。','不能。模型准备也必须完成。'],['所有检查完成，归还资源','这份资源重新进入可分配范围。房间保持已停止；下一次开播还需要重新发起。','可以。现在才允许交给一个开播请求。']];let recoveryIndex=0,recoveryFailed=false;
+function recoveryRender(){const states=byId('recovery-track').children;Array.from(states).forEach((s,i)=>{s.classList.toggle('active',!recoveryFailed&&i===recoveryIndex);s.classList.toggle('passed',i<recoveryIndex)});if(recoveryFailed){byId('recovery-title').textContent='清理失败，暂时停用这一份';byId('recovery-detail').textContent='不能证明旧状态已经清空，就从可用资源中移除，并记录失败原因。其他仍可用的资源继续服务。';byId('recovery-answer').textContent='不能。等待问题解决并完成验证，不能只改一个“可用”的标记。'}else{const data=recoverySteps[recoveryIndex];byId('recovery-title').textContent=data[0];byId('recovery-detail').textContent=data[1];byId('recovery-answer').textContent=data[2]}byId('next-recovery').disabled=recoveryFailed||recoveryIndex===5;byId('fail-recovery').disabled=recoveryFailed||recoveryIndex===0||recoveryIndex===5}
+byId('next-recovery').addEventListener('click',()=>{if(recoveryIndex<5&&!recoveryFailed)recoveryIndex++;recoveryRender();byId('recovery-result').textContent=recoveryIndex===5?'完成验证后，资源才从不可分配变为可分配。':'仍在处理，不能提前归还。'});
+byId('fail-recovery').addEventListener('click',()=>{if(recoveryIndex===0||recoveryIndex===5)return;recoveryFailed=true;recoveryRender();byId('recovery-result').textContent='失败后缩小可用容量，而不是冒险让新房间接手旧状态。'});
+byId('reset-recovery').addEventListener('click',()=>{recoveryIndex=0;recoveryFailed=false;recoveryRender();byId('recovery-result').textContent='恢复到演示起点：正在直播，还没有请求停止。'});recoveryRender();
+const navLinks=Array.from(document.querySelectorAll('.side a'));
+if('IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){navLinks.forEach(a=>a.setAttribute('aria-current',String(a.hash===`#${entry.target.id}`)))}})},{rootMargin:'-10% 0px -70% 0px'});document.querySelectorAll('main>[id]').forEach(s=>observer.observe(s))}
+</script>
+</body>
+</html>
