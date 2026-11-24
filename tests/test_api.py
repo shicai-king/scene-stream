@@ -2,11 +2,13 @@ import time
 from pathlib import Path
 import pytest
 import yaml
+import anyio
 from fastapi.testclient import TestClient
 from starlette.websockets import WebSocketDisconnect
 
 from longlive.app import create_app
 from longlive.manager import RoomManager
+from longlive.schemas import CreateRoom
 from tests.test_rooms import FakeSource, settings
 
 
@@ -54,10 +56,49 @@ def test_websocket_snapshot_shared_lease_and_origin():
                 assert second.receive_json()['room']['viewers']==2
                 assert client.get('/api/v1/capacity').json()['active_sessions']==1
             assert client.get(f'/api/v1/rooms/{room_id}').json()['state']=='LIVE'
+            assert client.get(f'/api/v1/rooms/{room_id}').json()['viewers']==1
         assert client.get(f'/api/v1/rooms/{room_id}').json()['state']=='LIVE'
+        assert client.get(f'/api/v1/rooms/{room_id}').json()['viewers']==0
         with pytest.raises(WebSocketDisconnect):
             with client.websocket_connect(path,headers={'origin':'https://unrelated.example'}):
                 pass
+
+
+@pytest.mark.asyncio
+async def test_cancelled_stream_releases_viewer():
+    config=settings(1)
+    manager=RoomManager(config,FakeSource)
+    app=create_app(config,manager)
+    snapshot=anyio.Event()
+
+    class Socket:
+        headers={}
+
+        async def accept(self):
+            pass
+
+        async def send_json(self, event):
+            if event['type']=='snapshot':
+                snapshot.set()
+
+        async def send_bytes(self, packet):
+            pass
+
+        async def receive_text(self):
+            await anyio.sleep_forever()
+
+        async def close(self):
+            pass
+
+    async with app.router.lifespan_context(app):
+        room,_=await manager.create(CreateRoom(name='demo',initial_prompt='forest'),'cancel-test')
+        endpoint=next(route.endpoint for route in app.routes if route.path.endswith('/stream'))
+        async with anyio.create_task_group() as group:
+            group.start_soon(endpoint,Socket(),room.id)
+            await snapshot.wait()
+            assert len(manager.room(room.id).viewers)==1
+            group.cancel_scope.cancel()
+        assert not manager.room(room.id).viewers
 
 
 def test_exported_openapi_matches_service():

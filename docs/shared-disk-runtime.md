@@ -27,6 +27,10 @@ docker compose -f compose.scope.local.yaml up --no-build -d
 
 `--gpu-ids` must contain only devices the operator may use. The renderer creates writable worker log directories as the current user. The containers run as that user and mount only their required environment, managed Python and Scope source as read-only, plus model/log/config directories. No host network or Docker socket is mounted. Assets and per-process caches remain inside the worker's temporary directory.
 
+The generated services explicitly clear proxy variables and set `NO_PROXY=*`. Docker client defaults can otherwise inject a host-only or SOCKS proxy, breaking Scope startup or private worker communication. Model downloads happen before startup; the running model uses verified local files. Host proxy settings are left unchanged.
+
+The numeric container UID may have no `/etc/passwd` entry. Explicit `USER`/`LOGNAME` values and writable TorchInductor/Triton cache paths under `/tmp/longlive` allow Torch compilation setup without a username lookup failure.
+
 The deployment source must match `configs/scope-source.sha256.json`. `use_dependency_mirrors.py` keeps `vendor/scope/uv.lock.upstream`, changes only PyPI/PyTorch download origins in the deployment copy, and verifies unchanged versions and artifact hashes. `--restore` restores the original lock. The mirror directory is documented by [Aliyun](https://mirrors.aliyun.com/pytorch-wheels/cu128/). SageAttention is omitted and disabled; see [compatibility](compatibility.md).
 
 The full-range downloader verifies every completed file against the official manifest before installing it. Its `cache/model-parts/` directory supports interrupted-download recovery. Run only one downloader per file/cache directory. Source and weight verification must pass before loading the model.

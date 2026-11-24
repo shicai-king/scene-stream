@@ -25,6 +25,13 @@ for i, gpu in enumerate(ids):
     base["workers"].append({"id": name, "backend": "scope", "endpoint": f"http://{name}:8000", "control_endpoint": f"http://{name}:9100", "launch_mode": "managed", "pipeline_id": "longlive", "width": args.width, "height": args.height, "seed": 42+i})
     services[name] = {"build": {"context": ".", "dockerfile": "deploy/Dockerfile.scope", "args": {"SCOPE_IMAGE": args.scope_image}}, "image": "longlive-scope:0.2.5", "init": True, "restart": "unless-stopped", "shm_size": "2gb", "environment": {"CUDA_VISIBLE_DEVICES": "0", "NVIDIA_VISIBLE_DEVICES": gpu, "DISABLE_SAGEATTENTION": "1", "HF_HUB_DISABLE_TELEMETRY": "1", "HF_HUB_OFFLINE": "1", "TRANSFORMERS_OFFLINE": "1"}, "volumes": ["./models:/models", f"./logs/{name}:/logs"], "expose": ["8000", "9100"], "deploy": {"resources": {"reservations": {"devices": [{"driver": "nvidia", "device_ids": [gpu], "capabilities": ["gpu"]}]}}}, "healthcheck": {"test": ["CMD", "/app/.venv/bin/python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/healthz', timeout=2)"], "interval": "10s", "timeout": "3s", "start_period": "90s", "retries": 12}}
     services["hub"]["depends_on"][name] = {"condition": "service_healthy"}
+for service in services.values():
+    # Docker client defaults can inject unrelated proxies into new containers.
+    # This topology uses private peers and preverified offline model assets.
+    service["environment"].update({name: "" for name in (
+        "HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy",
+    )})
+    service["environment"].update({"NO_PROXY": "*", "no_proxy": "*"})
 base["rooms"] = base["rooms"][:len(ids)]
 if args.runtime_root:
     runtime = Path(args.runtime_root).resolve()
@@ -40,7 +47,12 @@ if args.runtime_root:
         service["build"] = {"context": ".", "dockerfile": "deploy/Dockerfile.runtime"}
         service["image"] = image
         service["user"] = f"{os.getuid()}:{os.getgid()}"
-        service["environment"].update({"HOME": "/tmp/longlive", "PYTHONDONTWRITEBYTECODE": "1"})
+        service["environment"].update({
+            "HOME": "/tmp/longlive", "USER": "longlive", "LOGNAME": "longlive",
+            "PYTHONDONTWRITEBYTECODE": "1",
+            "TORCHINDUCTOR_CACHE_DIR": "/tmp/longlive/torchinductor",
+            "TRITON_CACHE_DIR": "/tmp/longlive/triton",
+        })
         service["volumes"].append(f"{runtime / 'python'}:{runtime / 'python'}:ro")
         if name == "hub":
             python = str(runtime / "hub-env/bin/python")

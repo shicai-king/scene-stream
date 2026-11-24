@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Shared interactive AI livestream rooms for reproducible classroom demos"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+  "anyio==4.16.0",
   "fastapi==0.115.12",
   "uvicorn[standard]==0.34.2",
   "httpx==0.28.1",

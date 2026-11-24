@@ -8,6 +8,7 @@ import time
 import uuid
 from urllib.parse import urlsplit
 
+from anyio import CancelScope
 from fastapi import FastAPI, Header, Query, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import FileResponse, JSONResponse
@@ -167,14 +168,17 @@ def create_app(settings: Settings | None = None, manager: RoomManager | None = N
         except (WebSocketDisconnect, TimeoutError, ValueError, RuntimeError):
             pass
         finally:
-            for task in (sender, receiver):
-                task.cancel()
-            await asyncio.gather(sender, receiver, return_exceptions=True)
-            await manager.leave(room, viewer)
-            try:
-                await websocket.close()
-            except RuntimeError:
-                pass
+            # ASGI shutdown may repeatedly cancel awaits; finish viewer cleanup
+            # before allowing that cancellation to propagate to the caller.
+            with CancelScope(shield=True):
+                for task in (sender, receiver):
+                    task.cancel()
+                await asyncio.gather(sender, receiver, return_exceptions=True)
+                await manager.leave(room, viewer)
+                try:
+                    await websocket.close()
+                except RuntimeError:
+                    pass
 
     static = Path(settings.static_dir)
     if (static / "assets").is_dir():
