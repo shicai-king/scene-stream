@@ -9,8 +9,9 @@ parser.add_argument("--gpu-ids", required=True, help="Comma-separated physical G
 parser.add_argument("--scope-image", default="ghcr.io/daydreamlive/scope@sha256:3bed0bf78d7a6cf6b467912c9985eebf7d5479d0401cbbc5f07ed8f58ce9dfef")
 parser.add_argument("--node-image", default="node:22.16.0-bookworm-slim")
 parser.add_argument("--port", type=int, default=8080)
-parser.add_argument("--width", type=int, default=576)
-parser.add_argument("--height", type=int, default=320)
+parser.add_argument("--width", type=int, default=384)
+parser.add_argument("--height", type=int, default=224)
+parser.add_argument("--force", action="store_true", help="Replace existing generated deployment files")
 parser.add_argument("--worker-startup-timeout", type=int, default=90, help="Seconds for the owned Scope process to reach HTTP readiness")
 parser.add_argument("--pipeline-ready-timeout", type=int, default=600, help="Separate model-loading deadline in seconds")
 parser.add_argument("--first-frame-timeout", type=int, default=180, help="Separate first-frame deadline after connection in seconds")
@@ -21,6 +22,13 @@ if not ids or any(not x.isdigit() for x in ids) or len(set(ids)) != len(ids):
     parser.error("GPU IDs must be unique nonnegative integers")
 if min(args.worker_startup_timeout, args.pipeline_ready_timeout, args.first_frame_timeout) <= 0:
     parser.error("Timeouts must be positive seconds")
+if not 1 <= args.port <= 65535:
+    parser.error("Port must be between 1 and 65535")
+if any(n < 128 or n > 2048 or n % 16 for n in (args.width, args.height)):
+    parser.error("Width and height must be multiples of 16 between 128 and 2048")
+outputs = (Path("configs/workers.local.yaml"), Path("compose.scope.local.yaml"))
+if not args.force and any(path.exists() for path in outputs):
+    parser.error("Deployment files already exist; review them before using --force to replace them")
 base = yaml.safe_load(Path("configs/workers.example.yaml").read_text())
 base["workers"] = []
 base.update(worker_startup_timeout_s=args.worker_startup_timeout,
@@ -36,6 +44,7 @@ for i, gpu in enumerate(ids):
     services[name]["environment"]["WORKER_STARTUP_TIMEOUT_S"] = str(args.worker_startup_timeout)
     services[name]["healthcheck"]["start_period"] = f"{args.worker_startup_timeout}s"
 for service in services.values():
+    service["logging"] = {"driver": "json-file", "options": {"max-size": "10m", "max-file": "3"}}
     # Docker client defaults can inject unrelated proxies into new containers.
     # This topology uses private peers and preverified offline model assets.
     service["environment"].update({name: "" for name in (

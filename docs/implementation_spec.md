@@ -1,6 +1,6 @@
 # Shared AI livestream rooms — implementation specification V4
 
-This is the current specification. It supersedes the independent-browser session semantics in the original root-level Markdown and OpenAPI v2. The original files remain as design history.
+This is the current specification. It supersedes the independent-browser session semantics in the original Markdown and OpenAPI v2. Those files remain as design history under `docs/archive/`.
 
 ## User experience
 

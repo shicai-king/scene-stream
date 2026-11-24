@@ -4,7 +4,7 @@ Updated 2026-11-24. These are observed results for the tested configuration, not
 
 | Level | Status | Evidence |
 |---|---|---|
-| 1 — software framework | PASS | 18 pytest checks; matching exported OpenAPI; production frontend build; real aiortc Mock transport; lifecycle/deadline/failure tests |
+| 1 — software framework | PASS | 23 pytest checks, including deployment isolation and overwrite protection; matching exported OpenAPI; production frontend build; real aiortc Mock transport; lifecycle/deadline/failure tests |
 | 2 — real single stream | PASS | Actual LongLive frames in the browser; visible prompt-driven scene changes; owned-process replacement, model reload and reuse |
 | 3 — real concurrent rooms | PASS | Two actual GPU streams; shared viewers; independent prompts and images; capacity rejection; normal recovery and injected single-worker failure while the other room continued |
 
@@ -49,6 +49,6 @@ A separate fault test sent SIGKILL only to the exact `scope_bootstrap.py` child 
 
 ## Evidence and limits
 
-Ignored local evidence under `artifacts/real/`: `models-verified.json`, `gpu-1-preflight.log`, `runtime-final.json`, `real-single.json`, `real-two.json`, `real-two-model-fps.json`, `real-recovery.json`, `real-recovery-generations.json`, `real-failure.json`, both `browser-*/browser-report.json` reports and screenshots, and `pair-scenes/report.json` with before/after JPEGs. Server raw records are under `results/raw/`; lifecycle logs are under `logs/`. Raw logs, private deployment paths and weights are not committed.
+Retained local evidence under ignored `artifacts/real/`: `models-verified.json`, `gpu-1-preflight.log`, `runtime-final.json`, `real-single.json`, `real-two.json`, `real-two-model-fps.json`, `real-recovery.json`, `real-recovery-generations.json`, the redacted `real-failure.json`, both `browser-*/browser-report.json` summaries and video-only JPEG samples. At the owner's request, local message histories, message event logs, prompt-bearing raw captures and screenshots containing chat/danmaku were deleted after verification. The observations above record the completed checks; deleted evidence is not included in the source distribution. Raw runtime files, private deployment paths and weights are not committed.
 
 This is a course-demo validation at one resolution with two workers. Higher resolutions, more than two simultaneous real workers, long-duration soak reliability, and alternative models have not been validated. The standard full CUDA image path has not been exercised here; the tested Docker variant uses pinned dependencies on the shared disk. The one observed pytest warning is an upstream Starlette/AnyIO deprecation warning.

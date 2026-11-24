@@ -10,7 +10,7 @@ export UV_CACHE_DIR="$project_root/runtime/uv"
 export UV_PYTHON_INSTALL_DIR="$project_root/runtime/python"
 export UV_HTTP_TIMEOUT="${UV_HTTP_TIMEOUT:-180}"
 "$uv_bin" python install 3.12.8
-runtime_python="$("$uv_bin" python find 3.12.8)"
+runtime_python="$("$uv_bin" python find --managed-python 3.12.8)"
 if ! test -d vendor/scope/src; then
   git clone --no-checkout https://github.com/daydreamlive/scope.git vendor/scope
   git -C vendor/scope checkout --detach "$scope_commit"
@@ -19,6 +19,6 @@ fi
 if [ "${1:-}" = "--use-mirrors" ]; then
   "$runtime_python" scripts/use_dependency_mirrors.py vendor/scope
 fi
-UV_PROJECT_ENVIRONMENT="$project_root/runtime/hub-env" "$uv_bin" sync --frozen --no-dev --python 3.12.8
-UV_PROJECT_ENVIRONMENT="$project_root/runtime/scope-env" "$uv_bin" sync --project vendor/scope --frozen --no-dev --python 3.12.8 --no-install-package sageattention
+UV_PROJECT_ENVIRONMENT="$project_root/runtime/hub-env" "$uv_bin" sync --frozen --no-dev --python "$runtime_python"
+UV_PROJECT_ENVIRONMENT="$project_root/runtime/scope-env" "$uv_bin" sync --project vendor/scope --frozen --no-dev --python "$runtime_python" --no-install-package sageattention
 printf '%s\n' 'Shared-disk environments installed. Verify model hashes before starting workers.'

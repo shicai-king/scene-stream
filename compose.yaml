@@ -1,10 +1,15 @@
-name: longlive-rooms
+name: longlive-mock
 services:
   hub:
     build: .
     image: longlive-rooms:0.1.0
     init: true
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'
     ports:
       - '127.0.0.1:8080:8080'
     environment:

@@ -1,10 +1,15 @@
 **
 !longlive/
-!longlive/**
+longlive/*
+!longlive/*.py
 !dist/
 !dist/**
 !deploy/
+deploy/*
 !deploy/supervisor.py
 !deploy/scope_bootstrap.py
 !scripts/
+scripts/*
 !scripts/probe_gpu.py
+**/*.local.*
+**/.env*

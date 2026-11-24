@@ -7,6 +7,8 @@
 *.local.yml
 *.local.json
 *.local.md
+*.local.py
+*.local.sh
 configs/workers.yaml
 .aws/
 .codex/
@@ -52,3 +54,11 @@ tools/crane
 tools/uv
 runtime/
 .download-venv/
+
+# Source exports and local editor files
+releases/
+*.tar
+*.tar.gz
+*.zip
+.idea/
+.vscode/

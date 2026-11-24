@@ -1,10 +1,49 @@
 # LongLive Rooms
 
-面向课程演示的共享 AI 视频直播间。左侧选择房间，大家观看同一条持续生成的视频；每条提示词显示为弹幕，模型优先接收最新的想法。默认两路，规模由配置决定。
+面向课程演示的共享 AI 视频直播间。左侧选择房间，观众共享同一条持续生成的视频；每条提示词显示为弹幕，模型优先接收最新的未投递提示词。默认两路，规模由配置决定。
 
-本地开发，Docker 部署。一个房间只运行一份模型推理，增加观众不增加生成槽位。当前实现和验证状态见 [验证记录](results/validation.md)。
+本项目提供网页、房间管理、视频分发和 Scope 适配器。模型推理由 [Scope](https://github.com/daydreamlive/scope) 中的 LongLive 完成。一个房间占用一个生成槽位，增加观众不会增加模型实例。
 
-## 本地运行：无需 GPU
+## 验证状态
+
+已在两张 A800 80GB 上完成真实双路验证：384×224、BF16，每路服务端视频接收约 **21 FPS**。共享观看、提示词改变画面、房间隔离、停播复用和单 Worker 故障恢复均已验证。完整配置、测量方法和限制见[验收记录](results/validation.md)。
+
+## 快速体验：Docker Mock
+
+需要 Docker Engine 和 Compose。无需 GPU；Mock 是带标识的测试画面，用于检查网页、弹幕与资源调度。
+
+```bash
+docker compose up --build -d
+```
+
+打开 **http://127.0.0.1:8080**。停止：
+
+```bash
+docker compose down
+```
+
+Mock 使用独立的 Compose 项目名 `longlive-mock`。真实部署默认使用 `longlive-rooms`，两者并行运行时还需要选择不同的入口端口。
+
+## 真实模型部署
+
+需要 Linux、Docker Compose、NVIDIA Container Toolkit 和获准使用的 NVIDIA GPU。已验证的配置是一张 A800 对应一个房间，默认两个房间。权重约 17.3 GB，首次部署还需要下载 Python/CUDA 依赖。
+
+| 方式 | 入口 | 当前验证范围 |
+|---|---|---|
+| 共享盘环境 + 小型 Docker 镜像 | [完整步骤](docs/shared-disk-runtime.md) | 已验证真实单路、双路和恢复 |
+| 完整 Scope Docker 镜像 | [部署说明](deploy/README.md#完整镜像部署) | 配置检查；尚未做该镜像路径的 GPU 验收 |
+
+部署脚本需要显式指定 GPU，默认分辨率为实测的 384×224。生成的 `compose.scope.local.yaml` 与 `configs/workers.local.yaml` 包含当前设备和目录信息，不提交 Git；再次生成需要显式加 `--force`。
+
+服务器入口只绑定回环地址。在自己的电脑执行：
+
+```bash
+bash scripts/tunnel.sh YOUR_SSH_ALIAS 8080 8080
+```
+
+保持终端打开，访问 http://127.0.0.1:8080 。脚本后两个参数分别是本地和服务器端口。网页、弹幕与视频使用同一个 SSH TCP 隧道。
+
+## 本地开发
 
 需要 Python 3.12、uv、Node.js 20.19+ 或 22。
 
@@ -13,110 +52,44 @@ cp configs/example.env .env
 bash scripts/dev_mock.sh
 ```
 
-打开 `http://127.0.0.1:8080`。Mock 是带房间标识和帧号的测试画面，经真实 WebRTC 传入房间服务；它不代表 AI 模型效果或性能。
+`.env` 由模板复制后自行修改；程序不会生成或提交真实部署凭据。按 Ctrl+C 停止。
 
 ```bash
-MOCK_WORKER_COUNT=4 bash scripts/dev_mock.sh
+uv sync --frozen
+npm ci
 uv run pytest -q
-bash scripts/smoke_test.sh --rooms 2 --seconds 15
-uv run python scripts/browser_smoke.py
+npm run build
+uv run python scripts/smoke_api.py --rooms 2 --seconds 15
 ```
 
-浏览器测试需要 Playwright Chromium；可执行 `uv run playwright install chromium`，或用 `--browser /path/to/chrome` 指定已有浏览器。原始结果与截图写入 `artifacts/`。按 Ctrl+C 停止本地服务。
+冒烟测试需要服务已启动。浏览器测试使用 `uv run playwright install chromium` 安装浏览器后执行 `uv run python scripts/browser_smoke.py`，或使用 `--browser /path/to/chrome` 指定已有浏览器。
 
-## Docker：Mock
+## 目录
 
-```bash
-docker compose up --build -d
-docker compose logs -f hub
-docker compose down
-```
-
-入口仅发布到服务器 `127.0.0.1:8080`。不需要 GPU、外部 STUN/TURN 或 Docker socket 挂载。
-
-## Docker：真实 LongLive
-
-需要 Linux、Docker Compose、NVIDIA Container Toolkit，以及可用的 NVIDIA GPU。先检查授权 GPU 是否空闲。以下 `0,1` 是一个两卡示例，需按自己的设备权限配置。
-
-1. 下载固定模型到持久目录。`models/`、缓存和日志不进入 Git 或应用镜像。
-
-```bash
-mkdir -p models logs results/raw
-python3 scripts/download_verified_models.py
-python3 scripts/verify_models.py
-```
-
-若服务器访问 Hugging Face 较慢，可使用已核对文件哈希的国内镜像。镜像只改变下载地址；全部文件仍须通过原始官方清单的 SHA256 校验。已完成的分块可在重跑时复用。
-
-```bash
-python3 scripts/download_verified_models.py --mirrors configs/models.mirrors.json --workers 8 --file-workers 2
-python3 scripts/verify_models.py
-```
-
-`--workers` 是每个文件的分块并发数，`--file-workers` 是同时下载的文件数。未列入镜像清单的配置和分词器文件仍从 Hugging Face 下载；可用 `--endpoint` 指定 HTTPS 镜像，哈希要求保持不变。
-
-2. 生成当前部署的 Worker 清单和 Compose 文件。这两个 `.local.yaml` 文件包含设备与部署参数，被 Git 忽略。
-
-```bash
-uv run python scripts/render_scope_deployment.py --gpu-ids 0,1
-docker compose -f compose.scope.local.yaml up --build -d
-docker compose -f compose.scope.local.yaml logs -f hub worker-1 worker-2
-```
-
-首次启动要加载模型；页面会显示准备状态。要降低生成分辨率，生成配置时加 `--width 384 --height 224`，两者必须为 16 的倍数。更多 Worker 使用显式设备列表，例如 `--gpu-ids 0,1,2,3`；默认房间仍为两个，可在网页创建更多房间，或编辑生成的房间配置。
-
-3. 从自己的电脑访问：
-
-```bash
-bash scripts/tunnel.sh YOUR_SSH_ALIAS
-```
-
-保持终端打开，在浏览器访问 `http://127.0.0.1:8080`。网页、弹幕和画面共享同一个 TCP 隧道。服务器内部仍使用 WebRTC；浏览器使用有界的 JPEG WebSocket 流，避免把“HTTP 隧道可达”误当成浏览器 WebRTC 媒体可达。
-
-4. 验证与停止：
-
-```bash
-bash scripts/smoke_test.sh --rooms 2 --seconds 30 --output artifacts/real-smoke.json
-docker compose -f compose.scope.local.yaml logs --no-color > results/raw/compose.log
-docker compose -f compose.scope.local.yaml down
-```
-
-只使用本项目 Compose 文件和项目名停止服务。不要按 GPU 编号批量终止其他人的进程。
-
-## 实现约定
-
-Docker 系统盘空间较小时，可使用[共享磁盘运行环境方案](docs/shared-disk-runtime.md)，将模型和 Python 环境放在项目数据盘，并以只读挂载接入小型应用镜像。
-
-- FastAPI 单管理进程；真实后端、Mock、Worker 数量、分辨率、超时都由配置控制。
-- Scope Worker 每个进程只承载一个生成房间。进程内 supervisor 只重启自己创建的子进程；模型重新就绪后才释放槽位。
-- 观众断线只回收自己的连接；停播才回收房间的生成资源。
-- 提示词状态分别显示已提交、被替代、已投递、过期或失败。“已投递”不表示画面已符合提示词。
-- 消息、帧、重试记录均有界；慢观众不会让直播积压大量旧帧。
-- 当前房间、历史与幂等记录为进程内状态；重启后重新开始，不承诺历史恢复。
-- 只面向受控演示访问，当前没有公开服务的身份与权限系统。
-
-## 项目文件
-
-| 路径 | 用途 |
+| 路径 | 内容 |
 |---|---|
-| `docs/implementation_spec.md` | 当前共享直播间规格 |
-| `api/openapi.yaml` | 与运行服务一致的 HTTP 契约 |
-| `docs/stream-protocol.md` | 弹幕、心跳和二进制画面协议 |
-| `docs/compatibility.md` | 固定 Scope 版本与兼容改动 |
-| `longlive/` | 控制服务、媒体适配器、生命周期 |
-| `web/` | TypeScript 网页 |
-| `deploy/` | Scope 容器和自有子进程管理 |
-| `configs/models*.json` | 模型 revision、文件尺寸与哈希 |
-| `tests/`、`scripts/` | 自动化检查和运行工具 |
+| `longlive/`、`web/` | Python 服务与 TypeScript 网页 |
+| `Dockerfile`、`compose.yaml` | 独立的 Mock / hub 镜像与本地演示 |
+| `deploy/` | Scope Worker、小型运行镜像、进程 supervisor |
+| `configs/` | 公共配置模板、镜像/源码/权重锁定清单 |
+| `api/`、`docs/` | 当前 API、协议、部署和实现说明 |
+| `scripts/`、`tests/` | 下载、部署、验证、打包工具与测试 |
+| `scripts/ops/` | 可选的网络受限环境运维工具 |
+| `results/validation.md` | 实际验收结果 |
 
-原始中文 Markdown 和 OpenAPI v2 保留为历史输入，不再是共享直播间的当前接口。修改 API 后执行 `PYTHONPATH=. uv run python scripts/export_openapi.py` 并运行测试。
+旧设计保存在 Git 的 `docs/archive/`，不属于当前实施契约，也不进入干净源码导出包。运行生成的 `models/`、`runtime/`、`cache/`、`logs/`、`artifacts/` 均被 Git 忽略。
 
-## 排错与测量
+## 行为与边界
 
-- 入口有响应、画面未出现：查看房间状态与 hub 日志，再检查对应 Worker 的模型加载和媒体连接。
-- Worker 被隔离：查看 reset/进程退出错误。不能仅凭 HTTP 健康就手动把槽位标为可用；修复后受控重启本项目服务。
-- 镜像下载受服务器代理影响：不要为此修改共享主机的全局配置。可用 `scripts/import_image.py` 配合官方 Crane 按摘要下载 Docker archive 再导入；这是可选运维工具。
-- 原始生成吞吐来自 Worker 日志的 `model_output_batch`；界面与冒烟脚本统计的是源收帧/浏览器接收吞吐。冷启动、首个中继帧、浏览器首帧应分开报告。
-- GPU 性能必须按真实配置实测；Mock 通过不能替代真实单路与两路验收。
+- 房间拥有生成任务；观众断开只移除自己的连接。
+- 每条被接受的提示词成为弹幕；仅保留最新一条未投递指令。“已投递”不等于画面已经符合提示词，场景变化可能保留旧元素。
+- Worker 只有在自有进程重建、模型加载和清理验证完成后才可复用；没有可靠重置能力的外部 Worker 会被隔离。
+- 画面队列、消息历史和幂等记录有界。当前状态在内存中，重启后重新开始。
+- 当前用于私人演示访问，没有公开服务的账号和权限体系。
+- [实现规格](docs/implementation_spec.md)、[媒体协议](docs/stream-protocol.md)、[Scope 兼容说明](docs/compatibility.md)记录具体约定。
 
-上游 [Scope](https://github.com/daydreamlive/scope) 与 [LongLive](https://github.com/NVlabs/LongLive) 的代码和模型仍遵循各自许可；本项目不分发权重。
+## GitHub 与许可
+
+源码检查、打包和上传步骤见 [GitHub 准备说明](docs/github.md)。GitHub Actions 配置运行软件测试、前端构建和 Mock Docker 冒烟测试，不使用 GPU，也不自动发布镜像。
+
+**本项目暂未指定许可证。** 第三方代码与模型保留各自许可，详见 [第三方说明](THIRD_PARTY_NOTICES.md)。源码包不包含 Scope 源码、模型权重或私有部署配置。

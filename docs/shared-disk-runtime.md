@@ -2,12 +2,12 @@
 
 Use this variant when the Docker storage partition cannot hold the full CUDA image. Python environments, models and cache live under the project directory; a small, digest-pinned official Python image contains only application code. This does not change Docker's global data-root or host drivers.
 
-Prepare the production frontend locally with `npm ci && npm run build`, then copy the source and `dist/` to the server. Do not copy `.git`, `.env`, local credentials, `node_modules`, or the local `.venv`.
+Prepare the production frontend locally with `npm ci && npm run build`, then copy the clean source archive and `dist/` to the server. A fresh clone can also build the frontend on the server if Node.js is available. Do not recursively copy the working directory: `.git`, `.env`, credentials, `node_modules`, the local `.venv`, download caches and message records are not deployment inputs.
 
 On the server, from the project directory:
 
 ```bash
-# Requires uv, git and Python 3; installs Python 3.12.8 under runtime/.
+# Requires uv 0.9.11, git and Python 3; installs Python 3.12.8 under runtime/.
 bash scripts/prepare_shared_runtime.sh
 # Optional alternative download origins; package versions and hashes stay fixed:
 # bash scripts/prepare_shared_runtime.sh --use-mirrors

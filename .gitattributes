@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+
+# Historical planning material remains in Git, outside clean source exports.
+docs/archive export-ignore

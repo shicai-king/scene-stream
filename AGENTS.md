@@ -1,6 +1,6 @@
 # Project implementation rules
 
-- Read `docs/implementation_spec.md`, `api/openapi.yaml`, and `docs/compatibility.md` before changing interfaces or backend behavior. Original root-level V2/V3 documents are historical inputs.
+- Read `docs/implementation_spec.md`, `api/openapi.yaml`, and `docs/compatibility.md` before changing interfaces or backend behavior. `docs/archive/` contains superseded historical inputs.
 - Develop locally. Deploy only to the host/path explicitly authorized in the current conversation; local deployment notes are ignored by Git. Never infer permission to use additional GPUs, stop another user's process, expose public ports, change host drivers, or push GitHub.
 - A room owns one generation source. Viewers share that source; leaving a room never stops it. Keep viewer, room, worker and upstream peer lifecycles separate.
 - All accepted prompts become events. Keep at most one unsent prompt per room; newest replaces older pending prompts. One server-side sender orders upstream delivery. A successful send is not a model/visual acknowledgement.
